@@ -1,0 +1,13 @@
+
+This project uses the following open-source libraries under the MIT License:
+
+- React (https://reactjs.org)
+- Recharts (https://recharts.org)
+- react-icons (https://react-icons.github.io)
+- echarts-for-react (https://github.com/hustcc/echarts-for-react)
+- sockjs-client
+- @stomp/stompjs
+
+Each library retains its own copyright.
+This project itself is licensed as proprietary and not open-source.
+© 2025 Bouldering Party. All rights reserved.

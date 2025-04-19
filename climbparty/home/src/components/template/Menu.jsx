@@ -36,8 +36,8 @@ export default function Menu({ user, userRole }) {
 
           {/* ✅ PC 메뉴 */}
           <div className="d-none d-lg-flex align-items-center gap-2 flex-nowrap fw-semibold">
-            <Link to="/teamCount" className="text-dark text-decoration-none px-2">📊 팀 점수</Link>
-            <Link to="/rank/tape" className="text-dark text-decoration-none px-2">🧗 테이프 랭킹</Link>
+            <Link to="/teamCount" className="text-dark text-decoration-none px-2">📊 조별 점수 보기</Link>
+            <Link to="/rank/tape" className="text-dark text-decoration-none px-2">🧗 색상별 전체 랭킹</Link>
 
             {isAdmin && (
               <>
@@ -93,8 +93,8 @@ export default function Menu({ user, userRole }) {
           </div>
 
           <div className="mt-4 text-center d-flex flex-column gap-3 fs-5 fw-semibold">
-            <Link to="/teamCount" className="text-dark" onClick={() => setOpen(false)}>📊 팀 점수</Link>
-            <Link to="/rank/tape" className="text-dark" onClick={() => setOpen(false)}>🧗 테이프별 랭킹</Link>
+            <Link to="/teamCount" className="text-dark" onClick={() => setOpen(false)}>📊 조별 점수 보기</Link>
+            <Link to="/rank/tape" className="text-dark" onClick={() => setOpen(false)}>🧗 색상별 전체 랭킹</Link>
 
             {/* ✅ 모바일 관리자 메뉴 드롭다운 */}
             {isAdmin && (

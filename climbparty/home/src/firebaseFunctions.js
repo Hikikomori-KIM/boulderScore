@@ -198,3 +198,26 @@ export const loadParties = async () => {
     ...doc.data(),
   }));
 };
+/**
+ * ✅ 약관 동의 후 Firestore에 유저 정보 저장
+ */
+export const saveUserAfterAgreement = async (user) => {
+  const userRef = doc(db, "users", user.uid);
+  await setDoc(userRef, {
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName || "이름 없음",
+    agreed: true, // ✅ 동의 여부 저장
+    role: "user",
+    createdAt: new Date(),
+  });
+};
+
+/**
+ * ✅ 약관 동의 여부 확인
+ */
+export const checkAgreement = async (uid) => {
+  const userRef = doc(db, "users", uid);
+  const snapshot = await getDoc(userRef);
+  return snapshot.exists() ? snapshot.data().agreed === true : false;
+};

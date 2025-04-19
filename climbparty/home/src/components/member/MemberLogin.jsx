@@ -36,8 +36,10 @@ export default function MemberLogin() {
   const handleGoogleLogin = async () => {
     try {
       const user = await googleLogin();
-      alert(`🎉 환영합니다, ${user.displayName || "구글 사용자"}님!`);
-      navigate("/");
+
+      // 약관 동의 페이지로 리다이렉트
+      navigate("/agree");
+
     } catch (error) {
       alert("❌ Google 로그인 실패: " + error.message);
     }
@@ -107,6 +109,18 @@ export default function MemberLogin() {
                 <a href="/join" className="text-primary fw-semibold text-decoration-none">
                   회원가입
                 </a>
+              </p>
+
+              {/* 이용약관/개인정보 링크 */}
+              <p className="mt-3 text-center text-muted small">
+                <a href="/terms" target="_blank" className="text-muted text-decoration-underline">
+                  이용약관
+                </a>{" "}
+                및{" "}
+                <a href="/privacy" target="_blank" className="text-muted text-decoration-underline">
+                  개인정보처리방침
+                </a>
+                을 확인하세요.
               </p>
             </div>
           </div>

@@ -134,12 +134,6 @@ export default function MyPage() {
         <input type="password" className="form-control" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
       </div>
 
-      <div className="mb-4">
-        <label className="form-label">관리자 코드</label>
-        <input type="text" className="form-control" value={adminCode} onChange={(e) => setAdminCode(e.target.value)} />
-        <small className="text-muted">※ 입력 시 관리자 권한이 부여됩니다.</small>
-      </div>
-
       <button className="btn btn-primary w-100 mb-3" onClick={handleSave}>저장하기</button>
 
       <button className="btn btn-danger w-100 mb-5" onClick={handleDeleteAccount}>회원탈퇴</button>

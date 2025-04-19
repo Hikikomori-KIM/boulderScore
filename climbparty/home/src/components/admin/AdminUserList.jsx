@@ -5,25 +5,32 @@ import {
   getDocs,
   updateDoc,
   doc,
+  getDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+
+// 역할 표시용 매핑
+const ROLE_LABEL = {
+  superadmin: "관리자",
+  admin: "운영자",
+  user: "일반회원",
+};
 
 export default function AdminUserList() {
   const [users, setUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [currentUserRole, setCurrentUserRole] = useState(null);
 
-  // 현재 로그인한 사용자의 role 확인
+  // 현재 로그인한 사용자의 role 최적화 조회
   useEffect(() => {
     const fetchCurrentUserRole = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
       if (user) {
-        const userDoc = await getDocs(collection(db, "users"));
-        const myInfo = userDoc.docs.find((d) => d.id === user.uid);
-        if (myInfo) {
-          const data = myInfo.data();
-          setCurrentUserRole(data.role);
+        const myDocRef = doc(db, "users", user.uid);
+        const myDocSnap = await getDoc(myDocRef);
+        if (myDocSnap.exists()) {
+          setCurrentUserRole(myDocSnap.data().role);
         }
       }
     };
@@ -44,6 +51,7 @@ export default function AdminUserList() {
     fetchUsers();
   }, []);
 
+  // 역할 변경 (운영자/일반회원만 변경 가능)
   const handleRoleChange = async (userId, newRole) => {
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, { role: newRole });
@@ -93,7 +101,9 @@ export default function AdminUserList() {
             <tr key={user.id}>
               <td>{user.displayName || user.name || "이름 없음"}</td>
               <td>{user.email}</td>
-              <td>{user.role}</td>
+              <td>
+                {ROLE_LABEL[user.role] || user.role}
+              </td>
               <td>
                 {user.role === "superadmin" ? (
                   <span className="text-muted">변경 불가</span>
@@ -106,7 +116,7 @@ export default function AdminUserList() {
                     }
                   >
                     <option value="user">일반회원</option>
-                    <option value="admin">관리자</option>
+                    <option value="admin">운영자</option>
                   </select>
                 ) : (
                   <span className="text-muted">권한 없음</span>

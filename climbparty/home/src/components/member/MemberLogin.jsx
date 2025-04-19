@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { loginUser } from "../../firebaseFunctions";
+import { loginUser, googleLogin } from "../../firebaseFunctions";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth"; // 🔺 인증 상태 직접 체크용 추가
+import { getAuth, signOut } from "firebase/auth";
 
 export default function MemberLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -21,16 +21,25 @@ export default function MemberLogin() {
       if (!user.emailVerified) {
         alert("📩 이메일 인증 후 사용해주세요.");
         const auth = getAuth();
-        await signOut(auth); // 세션 남아있지 않도록 로그아웃
-        return; // 🔺 navigate 방지
+        await signOut(auth);
+        return;
       }
 
       alert("🎉 로그인 성공!");
       navigate("/");
-
     } catch (error) {
       console.error("로그인 실패:", error);
       alert("❌ 로그인 실패: " + error.message);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const user = await googleLogin();
+      alert(`🎉 환영합니다, ${user.displayName || "구글 사용자"}님!`);
+      navigate("/");
+    } catch (error) {
+      alert("❌ Google 로그인 실패: " + error.message);
     }
   };
 
@@ -44,7 +53,7 @@ export default function MemberLogin() {
               <h2 className="mb-4 text-center">로그인</h2>
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                  <label className="form-label">아이디</label>
+                  <label className="form-label">이메일</label>
                   <input
                     type="email"
                     name="email"
@@ -67,10 +76,38 @@ export default function MemberLogin() {
                     required
                   />
                 </div>
-                <button type="submit" className="btn btn-primary w-100 rounded-pill mt-3">
-                  로그인
+                <button type="submit" className="btn btn-primary w-100 rounded-pill mt-2">
+                  이메일로 로그인
                 </button>
               </form>
+
+              {/* 구분선 */}
+              <div className="text-center my-3 text-muted">
+                <hr />
+                <small>또는</small>
+              </div>
+
+              {/* 구글 로그인 버튼 */}
+              <button
+                onClick={handleGoogleLogin}
+                className="btn btn-light border w-100 rounded-pill d-flex align-items-center justify-content-center"
+              >
+                <img
+                  src="https://developers.google.com/identity/images/g-logo.png"
+                  alt="Google"
+                  width="20"
+                  className="me-2"
+                />
+                구글 계정으로 로그인
+              </button>
+
+              {/* 회원가입 링크 */}
+              <p className="mt-4 text-center">
+                아직 계정이 없으신가요?{" "}
+                <a href="/join" className="text-primary fw-semibold text-decoration-none">
+                  회원가입
+                </a>
+              </p>
             </div>
           </div>
         </div>
@@ -80,7 +117,7 @@ export default function MemberLogin() {
           <div className="text-center px-4">
             <h1 className="display-5 fw-bold">Welcome to</h1>
             <h1 className="display-4 text-primary">Bouldering Party 🎉</h1>
-            <p className="mt-3 fs-5">지금 바로 회원가입하고 클라이밍 파티에 참여하세요!</p>
+            <p className="mt-3 fs-5">지금 바로 로그인하고 클라이밍 파티에 참여하세요!</p>
           </div>
         </div>
       </div>

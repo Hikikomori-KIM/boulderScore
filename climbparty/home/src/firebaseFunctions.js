@@ -17,7 +17,10 @@ import {
   setPersistence,
   browserLocalPersistence,
   signOut,
-  sendEmailVerification
+  sendEmailVerification,
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 
 /**
@@ -75,6 +78,39 @@ export const getUserRole = async (uid) => {
   const userRef = doc(db, "users", uid);
   const snapshot = await getDoc(userRef);
   return snapshot.exists() ? snapshot.data().role : null;
+};
+
+/**
+ * ✅ 구글 로그인 + Firestore 사용자 등록
+ */
+export const googleLogin = async () => {
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    const userRef = doc(db, "users", user.uid);
+    const snapshot = await getDoc(userRef);
+
+    // Firestore에 유저 정보가 없을 때만 저장
+    if (!snapshot.exists()) {
+      await setDoc(userRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || "이름 없음",
+        role: "user",
+        createdAt: new Date(),
+      });
+    }
+
+    console.log("✅ Google 로그인 성공:", user);
+    return user;
+  } catch (error) {
+    console.error("❌ Google 로그인 실패:", error);
+    throw error;
+  }
 };
 
 /**

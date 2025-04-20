@@ -1,4 +1,4 @@
-// 📁 src/contexts/AuthContext.js
+// 📁 src/components/AuthContext.js
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -8,34 +8,35 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [agreed, setAgreed] = useState(null); // ✅ 추가
+  const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [firstCheckDone, setFirstCheckDone] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-
+      if (!firebaseUser) {
+        setUser(null);
+        setUserRole(null);
+      } else {
         try {
+          setUser(firebaseUser);
           const userRef = doc(db, "users", firebaseUser.uid);
           const snapshot = await getDoc(userRef);
 
           if (snapshot.exists()) {
             const data = snapshot.data();
-            setAgreed(data.agreed || false); // ✅ 약관 동의 상태 저장
+            setUserRole(data.role || "user");
           } else {
-            setAgreed(false); // 문서 없으면 동의 안 한 것으로 간주
+            setUserRole("user");
           }
-        } catch (error) {
-          console.error("Firestore agreed 상태 불러오기 실패:", error);
-          setAgreed(false);
+        } catch (err) {
+          setUser(null);
+          setUserRole(null);
         }
-      } else {
-        setUser(null);
-        setAgreed(null);
       }
 
       setLoading(false);
+      setFirstCheckDone(true);
     });
 
     return () => unsubscribe();
@@ -44,12 +45,14 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     await signOut(auth);
     setUser(null);
-    setAgreed(null);
+    setUserRole(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, agreed, logout }}>
-      {!loading && children}
+    <AuthContext.Provider
+      value={{ user, userRole, logout, loading, firstCheckDone }}
+    >
+      {children}
     </AuthContext.Provider>
   );
 }

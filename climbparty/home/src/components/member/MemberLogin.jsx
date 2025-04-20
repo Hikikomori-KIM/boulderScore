@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { loginUser, googleLogin } from "../../firebaseFunctions";
+import { loginUser, checkAgreement } from "../../firebaseFunctions";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
+import GoogleLoginWithAgreement from "./GoogleLoginWithAgreement";
 
 export default function MemberLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -26,29 +27,24 @@ export default function MemberLogin() {
       }
 
       alert("🎉 로그인 성공!");
-      navigate("/");
+
+      const agreed = await checkAgreement(user.uid);
+      if (!agreed) {
+        navigate("/agree");
+      } else {
+        navigate("/"); // 이동 먼저
+        setTimeout(() => window.location.reload(), 100); // 상태 강제 재반영
+      }
     } catch (error) {
       console.error("로그인 실패:", error);
       alert("❌ 로그인 실패: " + error.message);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const user = await googleLogin();
-
-      // 약관 동의 페이지로 리다이렉트
-      navigate("/agree");
-
-    } catch (error) {
-      alert("❌ Google 로그인 실패: " + error.message);
-    }
-  };
-
   return (
     <div className="container-fluid vh-100">
       <div className="row h-100">
-        {/* 왼쪽 - 로그인 폼 */}
+        {/* 로그인 폼 */}
         <div className="col-md-6 d-flex align-items-center justify-content-center">
           <div className="w-100" style={{ maxWidth: "400px" }}>
             <div className="bg-white p-4 rounded shadow">
@@ -83,27 +79,14 @@ export default function MemberLogin() {
                 </button>
               </form>
 
-              {/* 구분선 */}
               <div className="text-center my-3 text-muted">
                 <hr />
                 <small>또는</small>
               </div>
 
-              {/* 구글 로그인 버튼 */}
-              <button
-                onClick={handleGoogleLogin}
-                className="btn btn-light border w-100 rounded-pill d-flex align-items-center justify-content-center"
-              >
-                <img
-                  src="https://developers.google.com/identity/images/g-logo.png"
-                  alt="Google"
-                  width="20"
-                  className="me-2"
-                />
-                구글 계정으로 로그인
-              </button>
+              {/* ✅ 구글 로그인 */}
+              <GoogleLoginWithAgreement />
 
-              {/* 회원가입 링크 */}
               <p className="mt-4 text-center">
                 아직 계정이 없으신가요?{" "}
                 <a href="/join" className="text-primary fw-semibold text-decoration-none">
@@ -111,7 +94,6 @@ export default function MemberLogin() {
                 </a>
               </p>
 
-              {/* 이용약관/개인정보 링크 */}
               <p className="mt-3 text-center text-muted small">
                 <a href="/terms" target="_blank" className="text-muted text-decoration-underline">
                   이용약관
@@ -126,7 +108,7 @@ export default function MemberLogin() {
           </div>
         </div>
 
-        {/* 오른쪽 - Welcoming Message */}
+        {/* 오른쪽 - 웰컴 메시지 */}
         <div className="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-light">
           <div className="text-center px-4">
             <h1 className="display-5 fw-bold">Welcome to</h1>

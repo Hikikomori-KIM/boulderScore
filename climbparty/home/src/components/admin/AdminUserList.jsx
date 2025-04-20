@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import {
   collection,
-  getDocs,
   updateDoc,
   doc,
   getDoc,
+  onSnapshot, // ✅ 실시간 반영
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -21,7 +21,7 @@ export default function AdminUserList() {
   const [searchText, setSearchText] = useState("");
   const [currentUserRole, setCurrentUserRole] = useState(null);
 
-  // 현재 로그인한 사용자의 role 최적화 조회
+  // 현재 로그인한 사용자의 role 조회
   useEffect(() => {
     const fetchCurrentUserRole = async () => {
       const auth = getAuth();
@@ -37,29 +37,24 @@ export default function AdminUserList() {
     fetchCurrentUserRole();
   }, []);
 
-  // 전체 유저 불러오기
-  const fetchUsers = async () => {
-    const snapshot = await getDocs(collection(db, "users"));
-    const userList = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setUsers(userList);
-  };
-
+  // 실시간 유저 목록 가져오기
   useEffect(() => {
-    fetchUsers();
+    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+      const userList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setUsers(userList);
+    });
+
+    return () => unsubscribe(); // 언마운트 시 구독 해제
   }, []);
 
   // 역할 변경 (운영자/일반회원만 변경 가능)
   const handleRoleChange = async (userId, newRole) => {
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, { role: newRole });
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === userId ? { ...user, role: newRole } : user
-      )
-    );
+    // 실시간 반영이므로 setUsers는 따로 안 써도 됨
   };
 
   // 🔍 검색 필터링된 유저 목록
@@ -101,9 +96,7 @@ export default function AdminUserList() {
             <tr key={user.id}>
               <td>{user.displayName || user.name || "이름 없음"}</td>
               <td>{user.email}</td>
-              <td>
-                {ROLE_LABEL[user.role] || user.role}
-              </td>
+              <td>{ROLE_LABEL[user.role] || user.role}</td>
               <td>
                 {user.role === "superadmin" ? (
                   <span className="text-muted">변경 불가</span>

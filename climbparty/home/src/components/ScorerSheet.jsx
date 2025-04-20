@@ -5,7 +5,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import ReactECharts from "echarts-for-react";
 
-const colors = ["초록", "파랑", "남색", "보라", "갈색", "검정"];
+const colors = ["검정", "갈색", "보라", "남색", "파랑", "초록"]; // ← 정렬 기준 순서
 const colorMap = {
   초록: "#22C55E",
   파랑: "#3B82F6",
@@ -36,13 +36,19 @@ export default function ScorerSheet() {
 
   const selectedMembers = members.filter(m => m.partyId === selectedPartyId && m.team === selectedTeam);
 
-  const chartData = selectedMembers
+  // ✅ 난이도 순서로 정렬
+  const sortedMembers = [...selectedMembers].sort((a, b) => {
+    const levelA = a.level?.split(",")[0]?.trim();
+    const levelB = b.level?.split(",")[0]?.trim();
+    return colors.indexOf(levelA) - colors.indexOf(levelB);
+  });
+
+  const chartData = sortedMembers
     .map((m) => {
       const scores = colors.map(color => m.scores?.[color] || 0);
       const total = scores.reduce((a, b) => a + b, 0);
       return { name: m.name, scores, total };
-    })
-    .sort((a, b) => b.total - a.total);
+    });
 
   const chartOption = {
     grid: { left: 100, right: 60, top: 30, bottom: 30 },
@@ -195,7 +201,7 @@ export default function ScorerSheet() {
 
       {/* 참가자 카드 */}
       <div className="row g-4">
-        {selectedMembers.map((member) => (
+        {sortedMembers.map((member) => (
           <div key={member.id} className="col-md-6">
             <div className="p-3 border rounded shadow-sm bg-white h-100 position-relative">
               <button
@@ -206,7 +212,37 @@ export default function ScorerSheet() {
                 onClick={() => handleRemoveMember(member.id)}
               ></button>
 
-              <h5 className="fw-bold mb-3">{member.name}</h5>
+              <h5 className="fw-bold mb-3 d-flex align-items-center gap-2">
+                {member.name}
+                {(() => {
+                  const level1 = member.level?.split(",")[0]?.trim();
+                  if (!level1) return null;
+
+                  const emojiMap = {
+                    초록: "🟢",
+                    파랑: "🔵",
+                    남색: "🔷",
+                    보라: "🟣",
+                    갈색: "🟤",
+                    검정: "⚫"
+                  };
+
+                  return (
+                    <span
+                      className="badge rounded-pill d-flex align-items-center"
+                      title={`1순위: ${level1}`}
+                      style={{
+                        backgroundColor: `${colorMap[level1]}20`, // 연한 배경
+                        color: colorMap[level1],
+                        fontWeight: 600,
+                        fontSize: "0.75rem"
+                      }}
+                    >
+                      {emojiMap[level1] || "🎯"}&nbsp;{level1}
+                    </span>
+                  );
+                })()}
+              </h5>
               <div className="d-flex flex-wrap gap-3">
                 {Object.entries(member.scores).map(([color, score]) => (
                   <div key={color} className="d-flex align-items-center gap-2">

@@ -1,6 +1,6 @@
 // 📁 src/components/ClimbCountMain.jsx
 import { ShieldCheck, AlertCircle, ActivitySquare, Footprints, Zap } from "lucide-react";
-
+import 'bootstrap-icons/font/bootstrap-icons.css';
 export default function ClimbCountMain({ user }) {
   return (
     <div>
@@ -54,16 +54,26 @@ export default function ClimbCountMain({ user }) {
       </div>
 
       {/* 제작자 정보 섹션 */}
-      <div className="container mt-5 mb-5">
-        <hr />
-        <div className="text-center">
-          <h5 className="mb-3">👨‍💻 제작자 정보</h5>
-          <p className="mb-1">만든이: <strong>김성범</strong></p>
-          <p className="mb-1">
-            인스타그램: <a href="https://www.instagram.com/climbxxg/" target="_blank" rel="noopener noreferrer">https://www.instagram.com/climbxxg/</a>
+      <div className="card text-center border-0 mt-5">
+        <div className="card-body">
+          <h5 className="card-title fw-bold mb-3">👨‍💻 제작자 정보</h5>
+
+          <p className="card-text">
+            만든이: <strong>김성범</strong>
           </p>
-          <p className="mb-1">
-            이메일: <span> gsb1028@naver.com </span>
+
+          <p className="card-text d-flex justify-content-center align-items-center gap-2">
+            <i className="bi bi-instagram" style={{ color: "#E4405F", fontSize: "1.2rem" }}></i>
+            <a href="https://www.instagram.com/climbxxg/" target="_blank" rel="noreferrer" className="text-decoration-none">
+              @climbxxg
+            </a>
+          </p>
+
+          <p className="card-text d-flex justify-content-center align-items-center gap-2">
+            <i className="bi bi-envelope-fill" style={{ color: "#0d6efd", fontSize: "1.2rem" }}></i>
+            <a href="mailto:gsb1028@naver.com" className="text-decoration-none">
+              gsb1028@naver.com
+            </a>
           </p>
         </div>
       </div>

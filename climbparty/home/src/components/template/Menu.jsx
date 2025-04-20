@@ -1,16 +1,16 @@
+// 📁 src/components/template/Menu.jsx
 import React, { useState } from "react";
 import holdImage from "../../assets/hold.jpg";
 import { Link, useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-// 수정 ✅
 import { useAuth } from "../AuthContext";
 
-export default function Menu({ user, userRole }) {
+export default function Menu() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
-  const { agreed } = useAuth(); // ✅ 약관 동의 여부
 
+  const { user, userRole } = useAuth();
   const isAdmin = userRole === "admin" || userRole === "superadmin";
   const isSuperAdmin = userRole === "superadmin";
 
@@ -22,13 +22,9 @@ export default function Menu({ user, userRole }) {
   };
 
   const handleProtectedClick = (e, path) => {
-    if (agreed === false) {
-      e.preventDefault();
-      alert("약관에 동의한 사용자만 이용할 수 있습니다.");
-      navigate("/agree");
-    } else {
-      navigate(path);
-    }
+    e.preventDefault();
+    navigate(path);
+    setOpen(false);
   };
 
   return (
@@ -55,10 +51,8 @@ export default function Menu({ user, userRole }) {
                     <li><a href="/admin/userlist" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/userlist")}>👥 권한부여</a></li>
                     <li><a href="/admin/gym" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/gym")}>🏟 암장설정</a></li>
                     <li><a href="/admin/party-team" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/party-team")}>🎉 파티명&조별설정</a></li>
+                    <li><a href="/admin/partyTape" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a></li> {/* ✅ 추가 */}
                     <li><a href="/admin/rankPage" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/rankPage")}>📊 전체랭킹</a></li>
-                    {isSuperAdmin && (
-                      <li><a href="/admin/add" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/add")}>🛠 등록</a></li>
-                    )}
                   </ul>
                 </div>
               </>
@@ -104,10 +98,8 @@ export default function Menu({ user, userRole }) {
                     <a href="/admin/userlist" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/userlist")}>👥 사용자 권한 관리</a>
                     <a href="/admin/gym" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/gym")}>🏟 암장/테이프 관리</a>
                     <a href="/admin/party-team" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/party-team")}>🎉 파티 & 조 구성</a>
+                    <a href="/admin/partyTape" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a> {/* ✅ 추가 */}
                     <a href="/admin/rankPage" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/rankPage")}>📊 전체랭킹</a>
-                    {isSuperAdmin && (
-                      <a href="/admin/add" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/add")}>🛠 관리자 등록</a>
-                    )}
                   </div>
                 )}
               </div>

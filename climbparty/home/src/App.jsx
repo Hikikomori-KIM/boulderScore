@@ -22,6 +22,8 @@ import ScorerSheet from './components/scorerSheet';
 import TapeRank from './components/rank/tapeRank';
 import Terms from './components/template/Terms';
 import Privacy from './components/template/Privacy';
+import BoardList from './components/board/boardList';
+import BoardNew from './components/board/boardNew';
 
 export default function App() {
   return (
@@ -72,6 +74,18 @@ function AppContent() {
             <MyPage />
           </RoleProtectedRoute>
         } />
+        {/* 게시판 페이지 */}
+        <Route path="/board/list" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <BoardList />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/board/new" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <BoardNew />
+          </RoleProtectedRoute>
+        } />
+        {/* ✅ 어드민 전용 보호라우트*/}
         <Route path="/ScorerSheet" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
             <ScorerSheet />

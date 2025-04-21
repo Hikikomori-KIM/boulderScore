@@ -1,85 +1,79 @@
-// components/BoardList.jsx
+// 📁 src/components/board/BoardList.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-// 더미 데이터
-const dummyPosts = [
-  {
-    id: "1",
-    category: "후기",
-    title: "2주년 볼파 같이 가실 분~",
-    author: "아이유",
-    createdAt: "2025.04.20",
-    views: 132,
-    likes: 12,
-  },
-  {
-    id: "2",
-    category: "자유",
-    title: "김성범 잘생겼다!!",
-    author: "츄",
-    createdAt: "2025.04.19",
-    views: 87,
-    likes: 4,
-  },
-  {
-    id: "3",
-    category: "홍보",
-    title: "6월 6일 SSS 볼파 초대해요!",
-    author: "성현",
-    createdAt: "2025.04.18",
-    views: 210,
-    likes: 23,
-  },
-  // 더 추가 가능
-];
+import { loadPosts } from "../../firebaseFunctions";
 
 export default function BoardList() {
   const [posts, setPosts] = useState([]);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   useEffect(() => {
-    setPosts(dummyPosts);
+    const fetchPosts = async () => {
+      const data = await loadPosts();
+      const sorted = data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      setPosts(sorted);
+    };
+    fetchPosts();
   }, []);
 
-  const totalPages = Math.ceil(posts.length / itemsPerPage);
-  const paginatedPosts = posts.slice(
+  const handleChangeItemsPerPage = (e) => {
+    setItemsPerPage(parseInt(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch =
+      post.title?.toLowerCase().includes(search.toLowerCase()) ||
+      post.content?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === "" || post.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
+  const paginatedPosts = filteredPosts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const handleChangeItemsPerPage = (e) => {
-    setItemsPerPage(parseInt(e.target.value));
-    setCurrentPage(1); // reset page
-  };
-
   return (
     <div className="container py-4" style={{ maxWidth: "800px" }}>
-      {/* 상단 헤더 + 옵션 */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      {/* 상단 영역 */}
+      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h4 className="mb-0">📋 자유게시판</h4>
 
-        <div className="d-flex gap-2 align-items-center">
+        <div className="d-flex gap-2 flex-wrap">
+          <input
+            type="text"
+            className="form-control form-control-sm"
+            placeholder="제목 또는 내용을 검색하세요"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ width: "200px", borderRadius: "20px" }}
+          />
+
           <select
             className="form-select form-select-sm"
-            style={{ width: "90px" }}
-            value={itemsPerPage}
-            onChange={handleChangeItemsPerPage}
+            style={{ width: "120px" }}
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            <option value="10">10개씩</option>
-            <option value="20">20개씩</option>
-            <option value="50">50개씩</option>
+            <option value="">전체</option>
+            <option value="자유">자유</option>
+            <option value="후기">후기</option>
+            <option value="홍보">홍보</option>
           </select>
 
-          <Link to="/board/new" className="btn btn-primary btn-sm">
+          <Link to="/board/new" className="btn btn-outline-primary btn-sm">
             + 글쓰기
           </Link>
         </div>
       </div>
 
       {/* 게시글 리스트 */}
-      <ul className="list-group">
+      <ul className="list-group mb-2">
         {paginatedPosts.map((post) => (
           <li
             key={post.id}
@@ -95,35 +89,42 @@ export default function BoardList() {
               className="text-muted text-end"
               style={{ fontSize: "0.85rem", minWidth: "130px" }}
             >
-              <span className="text-danger fw-bold">♥</span> {post.likes} | 🐾{" "}
-              {post.views}
+              <span className="text-danger fw-bold">♥</span> {post.likes} | 🐾 {post.views}
               <br />
-              {post.author} | {post.createdAt}
+              {post.author} | {post.createdAt?.toDate?.().toLocaleDateString?.()}
             </div>
           </li>
         ))}
       </ul>
 
-      {/* 페이지네이터 */}
-      <nav className="mt-4 d-flex justify-content-center">
-        <ul className="pagination pagination-sm mb-0">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <li
-              key={i}
-              className={`page-item ${
-                currentPage === i + 1 ? "active" : ""
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => setCurrentPage(i + 1)}
+      {/* 리스트 수 + 페이지네이터 */}
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <select
+          className="form-select form-select-sm"
+          style={{ width: "90px" }}
+          value={itemsPerPage}
+          onChange={handleChangeItemsPerPage}
+        >
+          <option value="10">10개</option>
+          <option value="20">20개</option>
+          <option value="50">50개</option>
+        </select>
+
+        <nav>
+          <ul className="pagination pagination-sm mb-0">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <li
+                key={i}
+                className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
               >
-                {i + 1}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+                <button className="page-link" onClick={() => setCurrentPage(i + 1)}>
+                  {i + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
     </div>
   );
 }

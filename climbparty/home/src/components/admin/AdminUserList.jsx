@@ -5,11 +5,10 @@ import {
   updateDoc,
   doc,
   getDoc,
-  onSnapshot, // ✅ 실시간 반영
+  onSnapshot,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// 역할 표시용 매핑
 const ROLE_LABEL = {
   superadmin: "관리자",
   admin: "운영자",
@@ -20,8 +19,9 @@ export default function AdminUserList() {
   const [users, setUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [currentUserRole, setCurrentUserRole] = useState(null);
+  const [sortKey, setSortKey] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
 
-  // 현재 로그인한 사용자의 role 조회
   useEffect(() => {
     const fetchCurrentUserRole = async () => {
       const auth = getAuth();
@@ -37,7 +37,6 @@ export default function AdminUserList() {
     fetchCurrentUserRole();
   }, []);
 
-  // 실시간 유저 목록 가져오기
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
       const userList = snapshot.docs.map((doc) => ({
@@ -46,18 +45,14 @@ export default function AdminUserList() {
       }));
       setUsers(userList);
     });
-
-    return () => unsubscribe(); // 언마운트 시 구독 해제
+    return () => unsubscribe();
   }, []);
 
-  // 역할 변경 (운영자/일반회원만 변경 가능)
   const handleRoleChange = async (userId, newRole) => {
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, { role: newRole });
-    // 실시간 반영이므로 setUsers는 따로 안 써도 됨
   };
 
-  // 🔍 검색 필터링된 유저 목록
   const filteredUsers = users.filter((user) => {
     const keyword = searchText.toLowerCase();
     return (
@@ -67,19 +62,58 @@ export default function AdminUserList() {
     );
   });
 
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    let aVal, bVal;
+
+    if (sortKey === "name") {
+      aVal = a.displayName || a.name || "";
+      bVal = b.displayName || b.name || "";
+    } else if (sortKey === "email") {
+      aVal = a.email;
+      bVal = b.email;
+    } else if (sortKey === "role") {
+      const rolePriority = { superadmin: 0, admin: 1, user: 2 };
+      aVal = rolePriority[a.role] ?? 3;
+      bVal = rolePriority[b.role] ?? 3;
+    } else if (sortKey === "createdAt") {
+      aVal = a.createdAt?.seconds || 0;
+      bVal = b.createdAt?.seconds || 0;
+    }
+
+    if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+    if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
   return (
     <div className="container mt-4">
       <h2 className="mb-3">회원 역할 관리</h2>
 
-      {/* 🔍 검색창 */}
-      <div className="mb-3">
+      <div className="mb-3 d-flex gap-2 align-items-center flex-wrap">
         <input
           type="text"
           className="form-control"
           placeholder="이름 또는 이메일 검색"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
+          style={{ maxWidth: "300px" }}
         />
+        <select
+          className="form-select"
+          value={sortKey}
+          onChange={(e) => setSortKey(e.target.value)}
+          style={{ maxWidth: "160px" }}
+        >
+          <option value="name">이름순</option>
+          <option value="email">이메일순</option>
+          <option value="role">역할순</option>
+          <option value="createdAt">가입일순</option> {/* ✅ 추가 */}
+        </select>
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+        >
+          {sortOrder === "asc" ? "▲" : "▼"}
+        </button>
       </div>
 
       <table className="table table-bordered">
@@ -92,7 +126,7 @@ export default function AdminUserList() {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
+          {sortedUsers.map((user) => (
             <tr key={user.id}>
               <td>{user.displayName || user.name || "이름 없음"}</td>
               <td>{user.email}</td>
@@ -104,9 +138,7 @@ export default function AdminUserList() {
                   <select
                     className="form-select"
                     value={user.role}
-                    onChange={(e) =>
-                      handleRoleChange(user.id, e.target.value)
-                    }
+                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
                   >
                     <option value="user">일반회원</option>
                     <option value="admin">운영자</option>

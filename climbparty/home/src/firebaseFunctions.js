@@ -8,6 +8,7 @@ import {
   getDoc,
   addDoc,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
@@ -21,6 +22,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
+import {arrayUnion,arrayRemove } from "firebase/firestore";
 
 // ✅ 회원가입
 export const registerUser = async (email, password, name) => {
@@ -35,7 +37,7 @@ export const registerUser = async (email, password, name) => {
     name,
     createdAt: new Date(),
     role: "user",
-    agreed: false, // 기본값 false
+    agreed: true, // 기본값 false
   });
 
   await sendEmailVerification(user);
@@ -200,4 +202,104 @@ export const loadParties = async () => {
     id: doc.id,
     ...doc.data(),
   }));
+};
+// ✅ 게시글 저장
+export const savePost = async (post) => {
+  return await addDoc(collection(db, "posts"), {
+    ...post,
+    createdAt: serverTimestamp(),  // ✅ 꼭 Timestamp로 저장
+    views: 0,
+    likes: 0,
+    likedBy: [],
+  });
+};
+// ✅ 게시글 목록 불러오기 (최신순)
+export const loadPosts = async () => {
+  const snapshot = await getDocs(collection(db, "posts"));
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+};
+// ✅ 특정 게시글 불러오기
+export const loadPostById = async (id) => {
+  const ref = doc(db, "posts", id);
+  const snapshot = await getDoc(ref);
+  if (!snapshot.exists()) throw new Error("게시글이 존재하지 않습니다.");
+  return { id: snapshot.id, ...snapshot.data() };
+};
+// ✅ 조회수 증가 + 중복 방지
+export const increaseViewCount = async (postId, uid) => {
+  const postRef = doc(db, "posts", postId);
+  const snapshot = await getDoc(postRef);
+
+  if (!snapshot.exists()) return;
+
+  const post = snapshot.data();
+  const alreadyViewed = post.viewedBy?.includes(uid);
+
+  if (!alreadyViewed) {
+    await updateDoc(postRef, {
+      views: (post.views || 0) + 1,
+      viewedBy: arrayUnion(uid),
+    });
+  }
+};
+// ✅ 좋아요 토글 함수 (있으면 취소, 없으면 추가)
+export const toggleLikePost = async (postId, uid) => {
+  const postRef = doc(db, "posts", postId);
+  const snapshot = await getDoc(postRef);
+  if (!snapshot.exists()) return null;
+
+  const post = snapshot.data();
+  const alreadyLiked = post.likedBy?.includes(uid);
+
+  if (alreadyLiked) {
+    // 좋아요 취소
+    await updateDoc(postRef, {
+      likes: (post.likes || 1) - 1,
+      likedBy: arrayRemove(uid),
+    });
+    return { liked: false };
+  } else {
+    // 좋아요 추가
+    await updateDoc(postRef, {
+      likes: (post.likes || 0) + 1,
+      likedBy: arrayUnion(uid),
+    });
+    return { liked: true };
+  }
+};
+// ✅ 게시글 삭제
+export const deletePost = async (postId) => {
+  const postRef = doc(db, "posts", postId);
+  await deleteDoc(postRef);
+};
+// ✅ 댓글 저장
+export const addComment = async (postId, { content, author, authorId }) => {
+  const commentsRef = collection(db, "posts", postId, "comments");
+  await addDoc(commentsRef, {
+    content,
+    author,
+    authorId,
+    createdAt: serverTimestamp(),
+  });
+};
+// ✅ 댓글 불러오기 (최신순)
+import { query, orderBy } from "firebase/firestore";
+
+export const getComments = async (postId) => {
+  const commentsRef = collection(db, "posts", postId, "comments");
+  const q = query(commentsRef, orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+export const updatePost = async (id, updatedData) => {
+  const postRef = doc(db, "posts", id);
+  await updateDoc(postRef, updatedData);
+};
+// ✅ 댓글 삭제 함수
+export const deleteComment = async (postId, commentId) => {
+  const commentRef = doc(db, "posts", postId, "comments", commentId);
+  await deleteDoc(commentRef);
 };

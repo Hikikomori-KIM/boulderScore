@@ -1,13 +1,32 @@
-// 📁 src/components/ClimbCountMain.jsx
 import { ShieldCheck, AlertCircle, ActivitySquare, Footprints, Zap } from "lucide-react";
 import 'bootstrap-icons/font/bootstrap-icons.css';
-export default function ClimbCountMain({ user }) {
+import { useAuth } from "../components/AuthContext";
+
+export default function ClimbCountMain() {
+  const { user } = useAuth();
+
   return (
     <div>
       {/* Hero Section */}
-      <div className="text-center bg-primary text-white p-5">
-        <h1 className="display-4 fw-bold">🎉 Bouldering Party에 오신 걸 환영합니다!</h1>
-        <p className="fs-5 mt-3">지금 바로 참가하고 클라이밍 랭킹에 도전해보세요!</p>
+      <div className="text-center bg-light p-5 border-bottom">
+        <h1 className="fw-bold display-5 mb-3" style={{ wordBreak: "keep-all" }}>
+          🧗‍♀️ Bouldering Party<br className="d-sm-none" />
+          <span className="text-primary">함께 즐기는 클라이밍 축제</span>
+        </h1>
+
+        <p className="fs-5 text-muted mb-4">
+          친구들과 함께, 점수로 즐기는 실시간 클라이밍 랭킹!
+        </p>
+
+        {user ? (
+          <a href="/board/list" className="btn btn-primary btn-lg shadow-sm">
+            게시판으로 이동하기
+          </a>
+        ) : (
+          <a href="/join" className="btn btn-primary btn-lg shadow-sm">
+            지금 참가하기
+          </a>
+        )}
       </div>
 
       {/* 소개 섹션 */}

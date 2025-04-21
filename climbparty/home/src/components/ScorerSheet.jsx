@@ -44,11 +44,12 @@ export default function ScorerSheet() {
   });
 
   const chartData = sortedMembers
-    .map((m) => {
-      const scores = colors.map(color => m.scores?.[color] || 0);
-      const total = scores.reduce((a, b) => a + b, 0);
-      return { name: m.name, scores, total };
-    });
+  .map((m) => {
+    const scores = colors.map(color => m.scores?.[color] || 0);
+    const total = scores.reduce((a, b) => a + b, 0);
+    return { name: m.name, scores, total };
+  })
+  .sort((a, b) => b.total - a.total); // 🔥 여기만 추가!
 
   const chartOption = {
     grid: { left: 100, right: 60, top: 30, bottom: 30 },

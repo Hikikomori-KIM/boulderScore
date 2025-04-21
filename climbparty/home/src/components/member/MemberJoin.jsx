@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 export default function MemberJoin() {
+  const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState({
     email: "",
     name: "",
@@ -16,12 +17,18 @@ export default function MemberJoin() {
   });
   const navigate = useNavigate();
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
+
+    if (!agreed) {
+      alert("약관에 동의해주세요!");
+      return;
+    }
     e.preventDefault();
 
     if (!form.email || !form.name || !form.password || !form.confirmPassword) {
@@ -133,9 +140,30 @@ export default function MemberJoin() {
                     required
                   />
                 </div>
+                <div className="form-check mt-3">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="agreeCheck"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    required
+                  />
+                  <label className="form-check-label" htmlFor="agreeCheck">
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-decoration-underline fw-semibold">
+                      이용약관
+                    </a>
+                    와
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-decoration-underline fw-semibold">
+                      개인정보처리방침
+                    </a>
+                    에 동의합니다.
+                  </label>
+                </div>
                 <button
                   type="submit"
                   className="btn btn-primary w-100 rounded-pill mt-2"
+                  disabled={!agreed}
                 >
                   이메일로 회원가입
                 </button>

@@ -1,11 +1,12 @@
 // 📁 App.jsx
 import './App.css';
 import { useEffect, useState } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Menu from './components/template/Menu';
 import Footer from './components/template/Footer';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
+import { ToastContainer } from "react-toastify";
 
 // 페이지들
 import TeamCount from './components/TeamCount';
@@ -18,12 +19,16 @@ import AdminUserList from './components/admin/AdminUserList';
 import AdminPartyTeamPage from './components/admin/AdminPartyTeamPage';
 import AdminRankingPage from './components/admin/AdminRankingPage';
 import AdminPartyTape from './components/admin/AdminPartyTape';
-import ScorerSheet from './components/scorerSheet';
+import ScorerSheet from './components/ScorerSheet';
 import TapeRank from './components/rank/tapeRank';
 import Terms from './components/template/Terms';
 import Privacy from './components/template/Privacy';
 import BoardList from './components/board/boardList';
 import BoardNew from './components/board/boardNew';
+import OpenInBrowser from './components/template/OpenInBrowser';
+import BoardDetail from './components/board/boardDetail';
+import BoardEdit from './components/board/boardEdit';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
@@ -33,11 +38,28 @@ export default function App() {
   );
 }
 
+
+
 function AppContent() {
   const location = useLocation();
   const { firstCheckDone } = useAuth();
 
   const [frozenLocation, setFrozenLocation] = useState(location);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    const isInApp = /kakaotalk|instagram|fbav|line/.test(ua);
+
+    const currentPath = window.location.pathname;
+
+    // 현재 경로가 이미 안내 페이지가 아닐 때만 이동
+    if (isInApp && currentPath !== "/open-in-browser") {
+      navigate("/open-in-browser");
+    }
+  }, []);
+
 
   useEffect(() => {
     // ✅ 인증이 완료되었을 때만 location 업데이트
@@ -57,6 +79,7 @@ function AppContent() {
         <Route path="/join" element={<MemberJoin />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/open-in-browser" element={<OpenInBrowser />} />
 
         {/* ✅ 보호 라우트 */}
         <Route path="/teamCount" element={
@@ -85,6 +108,16 @@ function AppContent() {
             <BoardNew />
           </RoleProtectedRoute>
         } />
+        <Route path="/board/:id" element={
+          <RoleProtectedRoute allowRoles={["user","admin","superadmin"]}>
+            <BoardDetail/>
+          </RoleProtectedRoute>
+        }/>
+        <Route path="/board/:id/edit" element={
+          <RoleProtectedRoute allowRoles={["user","admin","superadmin"]}>
+            <BoardEdit/>
+          </RoleProtectedRoute>
+        }/>        
         {/* ✅ 어드민 전용 보호라우트*/}
         <Route path="/ScorerSheet" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
@@ -119,6 +152,7 @@ function AppContent() {
       </Routes>
 
       <Footer />
+      <ToastContainer position="bottom-right" autoClose={2000} />
     </div>
   );
 }

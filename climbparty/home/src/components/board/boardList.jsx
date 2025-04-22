@@ -84,6 +84,11 @@ export default function BoardList() {
               className="text-decoration-none text-dark flex-grow-1"
             >
               [ {post.category} ] {post.title}
+              {typeof post.commentCount === "number" && (
+                <span className="text-muted ms-2" style={{ fontSize: "0.85rem" }}>
+                  💬 {post.commentCount}
+                </span>
+              )}
             </Link>
             <div
               className="text-muted text-end"

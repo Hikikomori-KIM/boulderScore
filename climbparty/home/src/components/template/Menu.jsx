@@ -39,8 +39,8 @@ export default function Menu() {
           <div className="d-none d-lg-flex align-items-center gap-2 flex-nowrap fw-semibold">
             <a href="/teamCount" className="text-dark text-decoration-none px-2" onClick={(e) => handleProtectedClick(e, "/teamCount")}>📊 조별 점수 보기</a>
             <a href="/rank/tape" className="text-dark text-decoration-none px-2" onClick={(e) => handleProtectedClick(e, "/rank/tape")}>🧗 색상별 전체 랭킹</a>
-            <a href="/board/list" className="text-dark text-decoration-none px-2" onClick={(e) => handleProtectedClick(e, "/board/list")}>📝 자유게시판(공사중)</a>
-
+            <a href="/board/list" className="text-dark text-decoration-none px-2" onClick={(e) => handleProtectedClick(e, "/board/list")}>📝 자유게시판</a>
+            <a href="/challenge" className="text-dark text-decoration-none px-2" onClick={(e) => handleProtectedClick(e, "/challenge")}>🎮 미니게임</a>
 
             {isAdmin && (
               <>
@@ -53,7 +53,7 @@ export default function Menu() {
                     <li><a href="/admin/userlist" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/userlist")}>👥 권한부여</a></li>
                     <li><a href="/admin/gym" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/gym")}>🏟 암장설정</a></li>
                     <li><a href="/admin/party-team" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/party-team")}>🎉 파티명&조별설정</a></li>
-                    <li><a href="/admin/partyTape" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a></li> {/* ✅ 추가 */}
+                    <li><a href="/admin/partyTape" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a></li>
                     <li><a href="/admin/rankPage" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/rankPage")}>📊 전체랭킹</a></li>
                   </ul>
                 </div>
@@ -87,7 +87,8 @@ export default function Menu() {
           <div className="mt-4 text-center d-flex flex-column gap-3 fs-5 fw-semibold">
             <a href="/teamCount" className="text-dark" onClick={(e) => handleProtectedClick(e, "/teamCount")}>📊 조별 점수 보기</a>
             <a href="/rank/tape" className="text-dark" onClick={(e) => handleProtectedClick(e, "/rank/tape")}>🧗 색상별 전체 랭킹</a>
-            <a href="/board/list" className="text-dark text-decoration-none px-2" onClick={(e) => handleProtectedClick(e, "/board/list")}>📝 자유게시판(공사중)</a>
+            <a href="/board/list" className="text-dark" onClick={(e) => handleProtectedClick(e, "/board/list")}>📝 자유게시판</a>
+            <a href="/challenge" className="text-dark" onClick={(e) => handleProtectedClick(e, "/challenge")}>🎮 미니게임</a>
 
             {isAdmin && (
               <div className="border-top pt-3 mt-3">
@@ -101,7 +102,7 @@ export default function Menu() {
                     <a href="/admin/userlist" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/userlist")}>👥 사용자 권한 관리</a>
                     <a href="/admin/gym" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/gym")}>🏟 암장/테이프 관리</a>
                     <a href="/admin/party-team" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/party-team")}>🎉 파티 & 조 구성</a>
-                    <a href="/admin/partyTape" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a> {/* ✅ 추가 */}
+                    <a href="/admin/partyTape" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a>
                     <a href="/admin/rankPage" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/rankPage")}>📊 전체랭킹</a>
                   </div>
                 )}

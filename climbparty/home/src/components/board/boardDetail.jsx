@@ -50,14 +50,27 @@ export default function BoardDetail() {
     const fetchPost = async () => {
       try {
         const data = await loadPostById(id);
+        console.log("✅ 게시글 로딩 성공", data);
         setPost(data);
+
         if (user && data) {
-          await increaseViewCount(id, user.uid);
-          setLiked(data.likedBy?.includes(user.uid));
+          try {
+            // 🔐 방어적으로 uid 체크
+            if (user.uid) {
+              await increaseViewCount(id, user.uid);
+            }
+
+            // 🛡️ likedBy가 undefined일 수 있으므로 []로 기본값 처리
+            const likedByList = Array.isArray(data.likedBy) ? data.likedBy : [];
+            setLiked(likedByList.includes(user.uid));
+          } catch (innerErr) {
+            console.warn("⚠️ 조회수 증가 또는 좋아요 여부 확인 실패", innerErr);
+          }
         }
       } catch (error) {
+        console.error("❌ 게시글 로딩 실패", error);
         alert("존재하지 않는 게시글입니다.");
-        navigate("/board");
+        navigate("/board/list");
       } finally {
         setLoading(false);
       }
@@ -65,6 +78,7 @@ export default function BoardDetail() {
 
     fetchPost();
   }, [id, user, navigate]);
+
 
   useEffect(() => {
     if (post) fetchComments();
@@ -77,7 +91,7 @@ export default function BoardDetail() {
     try {
       await deletePost(post.id);
       alert("삭제가 완료되었습니다.");
-      navigate("/board");
+      navigate("/board/list");
     } catch (err) {
       console.error("삭제 실패:", err);
       alert("삭제 중 오류가 발생했습니다.");

@@ -29,6 +29,9 @@ import OpenInBrowser from './components/template/OpenInBrowser';
 import BoardDetail from './components/board/boardDetail';
 import BoardEdit from './components/board/boardEdit';
 import "react-toastify/dist/ReactToastify.css";
+import OneToFiftyGame from './components/challenge/OneToFiftyGame';
+import OneToFiftyRanking from './components/challenge/OneToFiftyRanking';
+import ChallengeHome from './components/challenge/ChallengeHome';
 
 export default function App() {
   return (
@@ -109,15 +112,31 @@ function AppContent() {
           </RoleProtectedRoute>
         } />
         <Route path="/board/:id" element={
-          <RoleProtectedRoute allowRoles={["user","admin","superadmin"]}>
-            <BoardDetail/>
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <BoardDetail />
           </RoleProtectedRoute>
-        }/>
+        } />
         <Route path="/board/:id/edit" element={
-          <RoleProtectedRoute allowRoles={["user","admin","superadmin"]}>
-            <BoardEdit/>
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <BoardEdit />
           </RoleProtectedRoute>
-        }/>        
+        } />
+        {/* 게임 페이지 */}
+        <Route path="/challenge" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <ChallengeHome/>
+          </RoleProtectedRoute>
+        } />
+        <Route path="/challenge/one-to-fifty" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <OneToFiftyGame />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/challenge/one-to-fifty/rank" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <OneToFiftyRanking />
+          </RoleProtectedRoute>
+        } />
         {/* ✅ 어드민 전용 보호라우트*/}
         <Route path="/ScorerSheet" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>

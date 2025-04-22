@@ -1,5 +1,7 @@
 import { db, auth } from "./firebase";
+import { increment } from "firebase/firestore"; // 맨 위에 추가
 import {
+  getFirestore,
   collection,
   getDocs,
   setDoc,
@@ -22,7 +24,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import {arrayUnion,arrayRemove } from "firebase/firestore";
+import { arrayUnion, arrayRemove } from "firebase/firestore";
 
 // ✅ 회원가입
 export const registerUser = async (email, password, name) => {
@@ -225,18 +227,19 @@ export const loadPosts = async () => {
 export const loadPostById = async (id) => {
   const ref = doc(db, "posts", id);
   const snapshot = await getDoc(ref);
-  if (!snapshot.exists()) throw new Error("게시글이 존재하지 않습니다.");
   return { id: snapshot.id, ...snapshot.data() };
 };
 // ✅ 조회수 증가 + 중복 방지
 export const increaseViewCount = async (postId, uid) => {
+  if (!uid) return; // ✅ uid가 없으면 아무 작업도 안 함
+
   const postRef = doc(db, "posts", postId);
   const snapshot = await getDoc(postRef);
 
   if (!snapshot.exists()) return;
 
   const post = snapshot.data();
-  const alreadyViewed = post.viewedBy?.includes(uid);
+  const alreadyViewed = (post.viewedBy || []).includes(uid); // ✅ 방어 처리
 
   if (!alreadyViewed) {
     await updateDoc(postRef, {
@@ -284,7 +287,14 @@ export const addComment = async (postId, { content, author, authorId }) => {
     authorId,
     createdAt: serverTimestamp(),
   });
+
+  // 🔥 댓글 수 증가
+  const postRef = doc(db, "posts", postId);
+  await updateDoc(postRef, {
+    commentCount: increment(1),
+  });
 };
+
 // ✅ 댓글 불러오기 (최신순)
 import { query, orderBy } from "firebase/firestore";
 
@@ -302,4 +312,28 @@ export const updatePost = async (id, updatedData) => {
 export const deleteComment = async (postId, commentId) => {
   const commentRef = doc(db, "posts", postId, "comments", commentId);
   await deleteDoc(commentRef);
+
+  // 🔥 댓글 수 감소
+  const postRef = doc(db, "posts", postId);
+  await updateDoc(postRef, {
+    commentCount: increment(-1),
+  });
 };
+
+//기록 저장함수
+
+export async function saveOneToFiftyRecord(userId, name, time) {
+  const recordRef = doc(db, "oneToFiftyRecords", userId);
+  const snapshot = await getDoc(recordRef);
+
+  if (!snapshot.exists() || snapshot.data().bestTime > parseFloat(time)) {
+    await setDoc(recordRef, {
+      name,
+      bestTime: parseFloat(time),
+      createdAt: new Date(),
+    });
+    return true; // 기록 갱신됨
+  } else {
+    return false; // 기존 기록이 더 좋음
+  }
+}

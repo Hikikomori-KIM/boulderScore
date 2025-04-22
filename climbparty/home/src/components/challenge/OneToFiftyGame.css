@@ -1,0 +1,153 @@
+/* 기본 스타일 리셋 */
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', 'Pretendard', sans-serif;
+  }
+  
+  .one-to-fifty-container {
+    min-height: 100vh;
+    background: linear-gradient(to right, #c9d6ff, #e2e2e2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1rem;
+  }
+  
+  .header-box {
+    text-align: center;
+    padding: 1.5rem 2rem;
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  .timer {
+    font-size: 1.25rem;
+    color: #374151;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(60px, 1fr));
+    gap: 12px;
+    justify-content: center;
+    max-width: 350px;
+    width: 100%;
+  }
+  
+  .grid-btn {
+    height: 60px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #1f2937;
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .grid-btn:hover {
+    background-color: rgba(255, 255, 255, 0.45);
+    transform: scale(1.05);
+  }
+  
+  .grid-btn:disabled {
+    cursor: default;
+    background-color: transparent;
+    color: transparent;
+    pointer-events: none;
+  }
+  
+  .result-box {
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    text-align: center;
+  }
+  
+  .glass {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  .start-btn {
+    margin-top: 2rem;
+    padding: 0.8rem 2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.4);
+    color: #1f2937;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(6px);
+  }
+  
+  .start-btn:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+  }
+  .record-box {
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    text-align: center;
+  }
+  
+  .name-input {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    margin-right: 0.5rem;
+    width: 160px;
+  }
+  
+  .submit-btn {
+    padding: 0.6rem 1rem;
+    background-color: #1f2937;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .record-box {
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    text-align: center;
+  }
+  
+  .name-input {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    margin-right: 0.5rem;
+    width: 160px;
+  }
+  
+  .submit-btn {
+    padding: 0.6rem 1rem;
+    background-color: #1f2937;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }

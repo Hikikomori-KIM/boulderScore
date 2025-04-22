@@ -1,0 +1,124 @@
+/* ChallengeHome.css */
+
+.challenge-wrapper {
+    padding: 3rem 1rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: 'Pretendard', 'Segoe UI', sans-serif;
+  }
+  
+  .challenge-title {
+    font-size: 2.4rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  .challenge-subtitle {
+    font-size: 1.1rem;
+    color: #6b7280;
+    margin-bottom: 2.5rem;
+  }
+  
+  .challenge-card-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  .challenge-card {
+    padding: 2rem 1.5rem;
+    border-radius: 1.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    color: #111827;
+    text-align: left;
+    transition: transform 0.2s ease;
+  }
+  
+  .challenge-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  
+  .card-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .badge {
+    background-color: #facc15;
+    color: #111;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9999px;
+  }
+  
+  .card-desc {
+    font-size: 0.95rem;
+    color: #374151;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .card-actions .btn {
+    flex: 1;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+  }
+  .glass-reward {
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .reward-banner {
+    margin-top: 1rem;
+    background: linear-gradient(90deg, #facc15, #f59e0b);
+    color: #111;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    animation: popIn 0.5s ease;
+  }
+  
+  .trophy-icon {
+    font-size: 2rem;
+    animation: bounce 1.5s infinite;
+  }
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+  
+  .highlight {
+    color: #ef4444;
+    font-weight: bold;
+  }

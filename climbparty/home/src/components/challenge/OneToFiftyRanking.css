@@ -100,7 +100,8 @@
   }
   
   .ranking-table tbody tr.highlight {
-    background-color: #fef3c7;
+    background-color: whitesmoke;  /* 부드러운 연보라 배경 */
+    color: #333333;             /* 다크 그레이 텍스트 */
   }
   
   .ranking-table tbody tr:hover {

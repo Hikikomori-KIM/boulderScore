@@ -154,18 +154,37 @@ export default function TeamCount() {
           </select>
         </div>
       </div>
-
       {/* 차트 */}
       {selectedTeam && chartData.length > 0 && (
-        <div className="card mt-5">
-          <div className="card-body">
-            <h5 className="card-title text-center">{selectedTeam} 클리어 현황 (차트)</h5>
-            <div style={{ height: Math.max(chartData.length * 60, 300) }}>
-              <ReactECharts option={option} style={{ height: "100%" }} />
-            </div>
+        <div
+          style={{
+            width: "95vw",
+            maxWidth: "1200px",
+            margin: "0 auto",
+            background: "#fff",
+            borderRadius: "1rem",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            padding: "1rem"
+          }}
+        >
+          <h5 className="text-center mb-3 fw-semibold">{selectedTeam} 클리어 현황 (차트)</h5>
+
+          <div
+            style={{
+              width: "100%",
+              height: Math.max(chartData.length * 60, 300),
+              minHeight: "300px",
+              maxHeight: "600px",
+              overflow: "hidden"
+            }}
+          >
+            <ReactECharts option={option} style={{ width: "100%", height: "100%" }} />
           </div>
         </div>
       )}
+
+
+
     </div>
   );
 }

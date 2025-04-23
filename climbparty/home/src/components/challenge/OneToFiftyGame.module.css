@@ -1,0 +1,188 @@
+/* ✅ OneToFiftyGame.module.css (모듈 CSS용으로 camelCase 네이밍) */
+
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', 'Pretendard', sans-serif;
+}
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(to right, #c9d6ff, #e2e2e2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1rem;
+}
+
+.headerBox {
+  text-align: center;
+  padding: 1.5rem 2rem;
+  border-radius: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+timer {
+  font-size: 1.25rem;
+  color: #374151;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(60px, 1fr));
+  gap: 12px;
+  justify-content: center;
+  max-width: 350px;
+  width: 100%;
+}
+
+.gridBtn {
+  height: 60px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #1f2937;
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gridBtn:hover {
+  background-color: rgba(255, 255, 255, 0.45);
+  transform: scale(1.05);
+}
+
+.gridBtn:disabled {
+  cursor: default;
+  background-color: transparent;
+  pointer-events: none;
+}
+
+.startBtn {
+  margin-top: 2rem;
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.4);
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.startBtn:hover {
+  background-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.recordBox {
+  margin-top: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+}
+
+.resultBox {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+}
+
+.nameInput {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  margin-right: 0.5rem;
+  width: 160px;
+}
+
+.submitBtn {
+  padding: 0.6rem 1rem;
+  background-color: #1f2937;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.retryBtn {
+  margin-top: 1rem;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  color: #1f2937;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.retryBtn:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+.countdown {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  pointer-events: none;
+  animation: fadeInOut 1s ease-in-out;
+}
+
+.countdown {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem;
+  font-weight: bold;
+  color: white;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.timerBox {
+  height: 2rem; /* 또는 1.5rem 등, 타이머 텍스트 높이에 맞게 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.timer {
+  font-size: 1.2rem;
+  color: #374151;
+  font-weight: 500;
+}

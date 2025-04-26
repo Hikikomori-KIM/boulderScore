@@ -4,6 +4,14 @@ import { saveOneToFiftyRecord } from "../../firebaseFunctions";
 import styles from "./OneToFiftyGame.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 
+// ✅ 오디오 풀링: 클릭 사운드 5개 미리 준비
+const clickSounds = Array.from({ length: 5 }, () => {
+  const audio = new Audio("/sounds/coin.mp3");
+  audio.volume = 0.5;
+  return audio;
+});
+let soundIndex = 0;
+
 export default function OneToFiftyGame() {
   const [grid, setGrid] = useState([]);
   const [currentNumber, setCurrentNumber] = useState(1);
@@ -15,10 +23,9 @@ export default function OneToFiftyGame() {
   const [recordSaved, setRecordSaved] = useState(false);
   const [visibleCountdown, setVisibleCountdown] = useState(null); // ✅ 카운트다운 표시용
 
-  // ✅ 컴포넌트 언마운트될 때 스크롤 복구
   useEffect(() => {
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto"; // 언마운트 시 스크롤 복구
     };
   }, []);
 
@@ -52,16 +59,14 @@ export default function OneToFiftyGame() {
     setIsSubmitted(false);
     setRecordSaved(false);
 
-    // ✅ 스크롤 다시 풀어주기
-    document.body.style.overflow = "auto";
+    document.body.style.overflow = "auto"; // 스크롤 다시 풀기
   };
 
   const startCountdown = () => {
     prepareGrid();
 
-    // ✅ 화면 최상단 이동 + 스크롤 막기
     window.scrollTo(0, 0);
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden"; // 스크롤 막기
 
     const steps = ["3", "2", "1"];
     steps.forEach((step, index) => {
@@ -79,6 +84,13 @@ export default function OneToFiftyGame() {
 
   const handleClick = (idx) => {
     if (grid[idx].top !== currentNumber) return;
+
+    // ✅ 오디오 풀링 사용
+    const sound = clickSounds[soundIndex];
+    sound.currentTime = 0;
+    sound.play();
+    soundIndex = (soundIndex + 1) % clickSounds.length; // 순환
+
     setCurrentNumber((prev) => prev + 1);
     setGrid((prevGrid) => {
       const newGrid = [...prevGrid];

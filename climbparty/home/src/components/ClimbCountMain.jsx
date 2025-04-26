@@ -67,7 +67,7 @@ export default function ClimbCountMain() {
           </li>
           <li className="list-group-item d-flex align-items-center">
             <ShieldCheck className="me-3 text-muted" />
-            다치면 상품은 지금 안됩니다 😢 꼭 안전하게 즐겨주세요!
+            다치면 상품은 지급 안됩니다 😢 꼭 안전하게 즐겨주세요!
           </li>
         </ul>
       </div>

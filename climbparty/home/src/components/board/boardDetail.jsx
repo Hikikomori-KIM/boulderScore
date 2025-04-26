@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify"; // 상단에 import
+import { toast } from "react-toastify";
 import {
   loadPostById,
   toggleLikePost,
@@ -22,6 +22,20 @@ export default function BoardDetail() {
   const [liked, setLiked] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+
+  // ✅ 유튜브 링크 추출 함수
+  function extractYouTubeUrlFromContent(content) {
+    const regex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[^\s]+)/;
+    const match = content.match(regex);
+    return match ? match[1] : null;
+  }
+
+  // ✅ 유튜브 ID 추출 함수
+  function extractYouTubeId(url) {
+    const regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  }
 
   const fetchComments = async () => {
     const data = await getComments(post.id);
@@ -55,12 +69,9 @@ export default function BoardDetail() {
 
         if (user && data) {
           try {
-            // 🔐 방어적으로 uid 체크
             if (user.uid) {
               await increaseViewCount(id, user.uid);
             }
-
-            // 🛡️ likedBy가 undefined일 수 있으므로 []로 기본값 처리
             const likedByList = Array.isArray(data.likedBy) ? data.likedBy : [];
             setLiked(likedByList.includes(user.uid));
           } catch (innerErr) {
@@ -78,7 +89,6 @@ export default function BoardDetail() {
 
     fetchPost();
   }, [id, user, navigate]);
-
 
   useEffect(() => {
     if (post) fetchComments();
@@ -121,6 +131,8 @@ export default function BoardDetail() {
   if (loading) return <div className="container py-5">로딩 중...</div>;
   if (!post) return null;
 
+  const youtubeUrl = extractYouTubeUrlFromContent(post.content);
+
   return (
     <div className="container py-5" style={{ maxWidth: "720px" }}>
       <h5 className="mb-1">[ {post.category} ] {post.title}</h5>
@@ -130,16 +142,34 @@ export default function BoardDetail() {
         🐾 {post.views}
       </div>
 
+      {/* 본문 내용 */}
       <div className="mb-4" style={{ whiteSpace: "pre-line" }}>
         {post.content}
       </div>
 
+      {/* ✅ 본문 안에 유튜브 링크 있으면 미리보기 */}
+      {youtubeUrl && (
+        <div className="mb-4 text-center">
+          <iframe
+            width="100%"
+            height="400"
+            src={`https://www.youtube.com/embed/${extractYouTubeId(youtubeUrl)}`}
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      )}
+
+      {/* 홍보용 프로젝트 버튼 */}
       {post.category === "홍보" && post.linkedProjectId && (
         <button className="btn btn-outline-success btn-sm mb-4" disabled>
           🎉 이 프로젝트에 초대받았습니다 (현재 비활성화)
         </button>
       )}
 
+      {/* 조작 버튼들 */}
       <div className="d-flex justify-content-end gap-2">
         <button
           className="btn btn-outline-danger btn-sm"
@@ -156,7 +186,10 @@ export default function BoardDetail() {
           수정
         </button>
 
-        <button className="btn btn-outline-danger btn-sm" onClick={handleDelete}>
+        <button
+          className="btn btn-outline-danger btn-sm"
+          onClick={handleDelete}
+        >
           삭제
         </button>
 
@@ -171,7 +204,7 @@ export default function BoardDetail() {
       <hr className="my-4" />
       <h6 className="fw-bold mb-3">💬 댓글</h6>
 
-      {/* 댓글 입력 */}
+      {/* 댓글 작성 */}
       <form onSubmit={handleCommentSubmit} className="mb-4 d-flex flex-column gap-2">
         <textarea
           className="form-control"
@@ -190,7 +223,6 @@ export default function BoardDetail() {
         {comments.length === 0 && (
           <li className="list-group-item text-muted">아직 댓글이 없습니다.</li>
         )}
-
         {comments.map((c) => (
           <li
             key={c.id}
@@ -204,7 +236,7 @@ export default function BoardDetail() {
               </small>
             </div>
 
-            {/* ✅ 본인 댓글일 경우 삭제 버튼 표시 */}
+            {/* 본인 댓글이면 삭제 가능 */}
             {user?.uid === c.authorId && (
               <button
                 className="btn btn-sm btn-outline-danger ms-2"
@@ -223,7 +255,6 @@ export default function BoardDetail() {
           </li>
         ))}
       </ul>
-
     </div>
   );
 }

@@ -15,6 +15,13 @@ export default function OneToFiftyGame() {
   const [recordSaved, setRecordSaved] = useState(false);
   const [visibleCountdown, setVisibleCountdown] = useState(null); // ✅ 카운트다운 표시용
 
+  // ✅ 컴포넌트 언마운트될 때 스크롤 복구
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
   useEffect(() => {
     let interval = null;
     if (startTime && !endTime) {
@@ -44,10 +51,18 @@ export default function OneToFiftyGame() {
     setStarted(false);
     setIsSubmitted(false);
     setRecordSaved(false);
+
+    // ✅ 스크롤 다시 풀어주기
+    document.body.style.overflow = "auto";
   };
 
   const startCountdown = () => {
     prepareGrid();
+
+    // ✅ 화면 최상단 이동 + 스크롤 막기
+    window.scrollTo(0, 0);
+    document.body.style.overflow = "hidden";
+
     const steps = ["3", "2", "1"];
     steps.forEach((step, index) => {
       setTimeout(() => {
@@ -55,7 +70,6 @@ export default function OneToFiftyGame() {
       }, index * 1000);
     });
 
-    // 마지막 숫자 후에 게임 시작
     setTimeout(() => {
       setVisibleCountdown(null);
       setStarted(true);
@@ -93,7 +107,7 @@ export default function OneToFiftyGame() {
       <div className={`${styles.headerBox} ${styles.glass}`}>
         <h2 className={styles.title}>1 to 50</h2>
         <div className={styles.timerBox}>
-        {started && <p className={styles.timer}>⏱️ {elapsed}초</p>}
+          {started && <p className={styles.timer}>⏱️ {elapsed}초</p>}
         </div>
         {(started || grid.length > 0) && (
           <button className={`${styles.retryBtn} ${styles.glass}`} onClick={startCountdown}>

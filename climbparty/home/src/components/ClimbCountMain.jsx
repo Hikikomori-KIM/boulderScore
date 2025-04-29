@@ -2,6 +2,7 @@ import { ShieldCheck, AlertCircle, ActivitySquare, Footprints, Zap } from "lucid
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useAuth } from "../components/AuthContext";
 
+
 export default function ClimbCountMain() {
   const { user } = useAuth();
 

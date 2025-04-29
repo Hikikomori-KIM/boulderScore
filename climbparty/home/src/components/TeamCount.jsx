@@ -6,7 +6,7 @@ export default function TeamCount() {
   const [parties, setParties] = useState([]);
   const [selectedPartyId, setSelectedPartyId] = useState("");
   const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedTeamId, setSelectedTeamId] = useState("");
   const [memberData, setMemberData] = useState([]);
 
   const colors = ["초록", "파랑", "남색", "보라", "갈색", "검정"];
@@ -27,7 +27,7 @@ export default function TeamCount() {
   useEffect(() => {
     const party = parties.find((p) => p.id === selectedPartyId);
     setTeams(party?.teams || []);
-    setSelectedTeam("");
+    setSelectedTeamId("");
   }, [selectedPartyId, parties]);
 
   const changeParty = useCallback((e) => {
@@ -35,12 +35,13 @@ export default function TeamCount() {
   }, []);
 
   const changeTeam = useCallback((e) => {
-    setSelectedTeam(e.target.value);
+    setSelectedTeamId(e.target.value);
   }, []);
 
   const selectedMembers = memberData.filter(
-    (m) => m.partyId === selectedPartyId && m.team === selectedTeam
+    (m) => m.partyId === selectedPartyId && m.teamId === selectedTeamId
   );
+
   const chartData = selectedMembers
     .map((m) => {
       const scores = colors.map((color) => m.scores?.[color] || 0);
@@ -51,19 +52,11 @@ export default function TeamCount() {
         total,
       };
     })
-    .sort((a, b) => b.total - a.total); // 점수 높은 순
+    .sort((a, b) => b.total - a.total);
 
   const option = {
-    grid: {
-      left: 100,
-      right: 60,
-      top: 30,
-      bottom: 30,
-    },
-    xAxis: {
-      type: "value",
-      max: (value) => value.max * 1.1,
-    },
+    grid: { left: 100, right: 60, top: 30, bottom: 30 },
+    xAxis: { type: "value", max: (value) => value.max * 1.1 },
     yAxis: {
       type: "category",
       data: chartData.map((m) => m.name),
@@ -141,21 +134,22 @@ export default function TeamCount() {
         <div className="col">
           <select
             className="form-select form-select-sm rounded-pill shadow-sm border-primary"
-            value={selectedTeam}
+            value={selectedTeamId}
             onChange={changeTeam}
             disabled={!selectedPartyId}
           >
             <option value="">팀을 선택해주세요</option>
             {teams.map((team) => (
-              <option key={team} value={team}>
-                {team}
+              <option key={team.id} value={team.id}>
+                {team.name}
               </option>
             ))}
           </select>
         </div>
       </div>
+
       {/* 차트 */}
-      {selectedTeam && chartData.length > 0 && (
+      {selectedTeamId && chartData.length > 0 && (
         <div
           style={{
             width: "95vw",
@@ -164,10 +158,15 @@ export default function TeamCount() {
             background: "#fff",
             borderRadius: "1rem",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            padding: "1rem"
+            padding: "1rem",
           }}
         >
-          <h5 className="text-center mb-3 fw-semibold">{selectedTeam} 클리어 현황 (차트)</h5>
+          <h5 className="text-center mb-3 fw-semibold">
+            {
+              teams.find((t) => t.id === selectedTeamId)?.name || "팀"
+            }{" "}
+            클리어 현황 (차트)
+          </h5>
 
           <div
             style={{
@@ -175,16 +174,13 @@ export default function TeamCount() {
               height: Math.max(chartData.length * 60, 300),
               minHeight: "300px",
               maxHeight: "600px",
-              overflow: "hidden"
+              overflow: "hidden",
             }}
           >
             <ReactECharts option={option} style={{ width: "100%", height: "100%" }} />
           </div>
         </div>
       )}
-
-
-
     </div>
   );
 }

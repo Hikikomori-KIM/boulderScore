@@ -130,7 +130,12 @@ export const checkAgreement = async (uid) => {
 // ✅ 참가자 저장
 export const saveMember = async (member) => {
   const docRef = doc(db, "members", String(member.id));
-  await setDoc(docRef, member);
+  const memberToSave = {
+    ...member,
+    teamId: member.teamId, // teamId 저장
+  };
+  delete memberToSave.team; // 혹시 남아있을 team 필드는 지운다
+  await setDoc(docRef, memberToSave);
 };
 
 // ✅ 참가자 불러오기
@@ -148,8 +153,14 @@ export const deleteMember = async (memberId) => {
 // ✅ 참가자 수정
 export const updateMember = async (member) => {
   const docRef = doc(db, "members", String(member.id));
-  await setDoc(docRef, member);
+  const memberToUpdate = {
+    ...member,
+    teamId: member.teamId, // teamId 저장
+  };
+  delete memberToUpdate.team; // 혹시 남아있을 team 필드는 지운다
+  await setDoc(docRef, memberToUpdate);
 };
+
 
 // ✅ 암장 목록 불러오기
 export const loadGyms = async () => {

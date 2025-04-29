@@ -9,6 +9,7 @@ import {
   getDoc,
   deleteDoc
 } from "firebase/firestore";
+import { v4 as uuidv4 } from "uuid";
 
 export default function AdminPartyTeamPage() {
   const [partyName, setPartyName] = useState("");
@@ -18,6 +19,9 @@ export default function AdminPartyTeamPage() {
   const [existingParties, setExistingParties] = useState([]);
   const [selectedPartyId, setSelectedPartyId] = useState("");
   const [selectedPartyTeams, setSelectedPartyTeams] = useState([]);
+
+  const [editTeamId, setEditTeamId] = useState(null);
+  const [editTeamName, setEditTeamName] = useState("");
 
   // 전체 파티 불러오기
   const fetchParties = async () => {
@@ -45,13 +49,14 @@ export default function AdminPartyTeamPage() {
 
   const handleAddTeam = () => {
     const name = teamInput.trim();
-    if (!name || teams.includes(name)) return;
-    setTeams([...teams, name]);
+    if (!name || teams.some(t => t.name === name)) return;
+    const newTeam = { id: uuidv4(), name };
+    setTeams([...teams, newTeam]);
     setTeamInput("");
   };
 
-  const handleDeleteTeamFromNew = (name) => {
-    setTeams(teams.filter((t) => t !== name));
+  const handleDeleteTeamFromNew = (id) => {
+    setTeams(teams.filter((t) => t.id !== id));
   };
 
   const handleSaveNewParty = async () => {
@@ -60,7 +65,7 @@ export default function AdminPartyTeamPage() {
 
     await addDoc(collection(db, "parties"), {
       name: partyName.trim(),
-      teams,
+      teams, // [{id, name}]
     });
 
     alert("✅ 파티가 저장되었습니다!");
@@ -69,16 +74,16 @@ export default function AdminPartyTeamPage() {
     fetchParties();
   };
 
-  const handleDeleteExistingTeam = async (teamName) => {
+  const handleDeleteExistingTeam = async (teamId) => {
     const partyRef = doc(db, "parties", selectedPartyId);
     const snapshot = await getDoc(partyRef);
     if (!snapshot.exists()) return;
 
     const currentData = snapshot.data();
-    const updatedTeams = currentData.teams.filter((t) => t !== teamName);
+    const updatedTeams = (currentData.teams || []).filter((t) => t.id !== teamId);
 
     await updateDoc(partyRef, { teams: updatedTeams });
-    alert(`🗑 ${teamName} 조가 삭제되었습니다!`);
+    alert(`🗑 조가 삭제되었습니다!`);
 
     setSelectedPartyTeams(updatedTeams);
     fetchParties();
@@ -97,6 +102,35 @@ export default function AdminPartyTeamPage() {
       console.error("파티 삭제 실패:", err);
       alert("삭제 중 오류가 발생했습니다.");
     }
+  };
+
+  const startEditTeam = (team) => {
+    setEditTeamId(team.id);
+    setEditTeamName(team.name);
+  };
+
+  const cancelEditTeam = () => {
+    setEditTeamId(null);
+    setEditTeamName("");
+  };
+
+  const saveEditedTeam = async () => {
+    const partyRef = doc(db, "parties", selectedPartyId);
+    const snapshot = await getDoc(partyRef);
+    if (!snapshot.exists()) return;
+
+    const currentData = snapshot.data();
+    const updatedTeams = (currentData.teams || []).map((t) =>
+      t.id === editTeamId ? { ...t, name: editTeamName.trim() } : t
+    );
+
+    await updateDoc(partyRef, { teams: updatedTeams });
+    alert("✏️ 조 이름이 수정되었습니다!");
+
+    setSelectedPartyTeams(updatedTeams);
+    setEditTeamId(null);
+    setEditTeamName("");
+    fetchParties();
   };
 
   return (
@@ -135,10 +169,10 @@ export default function AdminPartyTeamPage() {
         </div>
 
         <ul className="list-group mb-3">
-          {teams.map((team, idx) => (
-            <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-              {team}
-              <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteTeamFromNew(team)}>
+          {teams.map((team) => (
+            <li key={team.id} className="list-group-item d-flex justify-content-between align-items-center">
+              {team.name}
+              <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteTeamFromNew(team.id)}>
                 삭제
               </button>
             </li>
@@ -152,7 +186,7 @@ export default function AdminPartyTeamPage() {
 
       <hr />
 
-      {/* 🔸 기존 파티 리스트 & 조 삭제 */}
+      {/* 🔸 기존 파티 리스트 & 조 관리 */}
       <div className="mt-4">
         <h4>🗂 기존 파티 조 관리</h4>
 
@@ -180,15 +214,34 @@ export default function AdminPartyTeamPage() {
 
         {selectedPartyTeams.length > 0 && (
           <ul className="list-group">
-            {selectedPartyTeams.map((team, idx) => (
-              <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-                {team}
-                <button
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleDeleteExistingTeam(team)}
-                >
-                  삭제
-                </button>
+            {selectedPartyTeams.map((team) => (
+              <li key={team.id} className="list-group-item d-flex justify-content-between align-items-center">
+                {editTeamId === team.id ? (
+                  <>
+                    <input
+                      className="form-control me-2"
+                      value={editTeamName}
+                      onChange={(e) => setEditTeamName(e.target.value)}
+                      style={{ width: "50%" }}
+                    />
+                    <div className="d-flex gap-2">
+                      <button className="btn btn-sm btn-success" onClick={saveEditedTeam}>저장</button>
+                      <button className="btn btn-sm btn-secondary" onClick={cancelEditTeam}>취소</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {team.name}
+                    <div className="d-flex gap-2">
+                      <button className="btn btn-sm btn-outline-primary" onClick={() => startEditTeam(team)}>
+                        수정
+                      </button>
+                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteExistingTeam(team.id)}>
+                        삭제
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>

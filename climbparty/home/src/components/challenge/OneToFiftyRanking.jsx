@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
 import { getAuth } from "firebase/auth";
 import "./OneToFiftyRanking.css";
@@ -12,6 +7,12 @@ import "./OneToFiftyRanking.css";
 export default function OneToFiftyRanking() {
   const [records, setRecords] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+
+  const prizes = [
+    { rank: 1, item: "딥퍼랑스 핸드크림", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1745889618/1%EB%93%B1%EC%83%81%ED%92%88_ca7qdt.jpg" },
+    { rank: 2, item: "스타벅스 기프티콘", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1745889612/2%EB%93%B1%EC%83%81%ED%92%88_cxohzy.jpg" },
+    { rank: 3, item: "베스킨라빈스 싱글콘", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1745889614/3%EB%93%B1%EC%83%81%ED%92%88_l4y9eb.jpg" },
+  ];
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -36,30 +37,47 @@ export default function OneToFiftyRanking() {
   return (
     <div className="ranking-wrapper">
       <h2 className="ranking-title">🏆 TOP 5 챌린저</h2>
-      <div className="top10-grid">
+
+      <div className="top5-list">
         {records.slice(0, 5).map((record, index) => (
           <div
-            className={`card modern-glass ${
-              index === 0 ? "gold" : index === 1 ? "silver" : index === 2 ? "bronze" : "default"
-            }`}
+            className={`rank-card ${index === 0 ? "first-place" : index === 1 ? "second-place" : index === 2 ? "third-place" : ""
+              }`}
             key={record.id}
           >
-            <div className="rank-badge">
-              {index === 0
-                ? "🥇"
-                : index === 1
-                ? "🥈"
-                : index === 2
-                ? "🥉"
-                : `${index + 1}위`}
+            <div className="badge-area">
+              <span className="badge-emoji">
+                {index === 0 ? "👑" : index === 1 ? "🥈" : index === 2 ? "🥉" : ""}
+              </span>
+              <span className="rank-label">{index + 1}위</span>
             </div>
-            <div className="card-name">{record.name}</div>
-            <div className="card-time">{record.bestTime.toFixed(2)}초</div>
+
+            <div className="rank-content">
+              <div className="rank-name">{record.name}</div>
+              <div className="rank-time">{record.bestTime.toFixed(2)}초</div>
+            </div>
           </div>
         ))}
       </div>
 
+      {/* 상품 안내 섹션 */}
+      <h3 className="ranking-subtitle">🎁 상품 안내</h3>
+
+      <div className="prize-list">
+        {prizes.map((prize) => (
+          <div className="prize-card" key={prize.rank}>
+            <div className="prize-rank">
+              {prize.rank === 1 ? "🥇 1등" : prize.rank === 2 ? "🥈 2등" : "🥉 3등"}
+            </div>
+            <img src={prize.image} alt={prize.item} className="prize-img" />
+            <div className="prize-item">{prize.item}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* 전체 랭킹 테이블 */}
       <h3 className="ranking-subtitle">전체 랭킹</h3>
+
       <div className="table-wrapper">
         <table className="ranking-table">
           <thead>

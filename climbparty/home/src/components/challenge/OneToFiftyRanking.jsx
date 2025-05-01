@@ -37,7 +37,7 @@ export default function OneToFiftyRanking() {
   return (
     <div className="ranking-wrapper">
       <h2 className="ranking-title">🏆 TOP 5 챌린저</h2>
-
+      <h2 className="fw-bold">6월6일 00시마감 </h2>
       <div className="top5-list">
         {records.slice(0, 5).map((record, index) => (
           <div

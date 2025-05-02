@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import {
-  saveMember, loadMembers, deleteMember, updateMember, loadParties
+  saveMember,
+  deleteMember,
+  updateMember,
+  loadParties
 } from "../firebaseFunctions";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "../firebase";
 import { v4 as uuidv4 } from 'uuid';
 import ReactECharts from "echarts-for-react";
 
@@ -25,7 +30,6 @@ export default function ScorerSheet() {
 
   useEffect(() => {
     loadParties().then(setParties);
-    loadMembers().then(setMembers);
   }, []);
 
   useEffect(() => {
@@ -34,11 +38,24 @@ export default function ScorerSheet() {
     setSelectedTeamId("");
   }, [selectedPartyId, parties]);
 
-  const selectedMembers = members.filter(
-    m => m.partyId === selectedPartyId && m.teamId === selectedTeamId
-  );
+  useEffect(() => {
+    if (!selectedPartyId || !selectedTeamId) return;
 
-  const sortedMembers = [...selectedMembers].sort((a, b) => {
+    const q = query(
+      collection(db, "members"),
+      where("partyId", "==", selectedPartyId),
+      where("teamId", "==", selectedTeamId)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMembers(data);
+    });
+
+    return () => unsubscribe();
+  }, [selectedPartyId, selectedTeamId]);
+
+  const sortedMembers = [...members].sort((a, b) => {
     const levelA = a.level?.split(",")[0]?.trim();
     const levelB = b.level?.split(",")[0]?.trim();
     return colors.indexOf(levelA) - colors.indexOf(levelB);
@@ -99,28 +116,28 @@ export default function ScorerSheet() {
   };
 
   const handleScoreChange = async (memberId, color, diff) => {
-    setMembers(prev =>
-      prev.map(m => {
-        if (m.id === memberId) {
-          const updated = {
-            ...m,
-            scores: {
-              ...m.scores,
-              [color]: Math.max(0, m.scores[color] + diff),
-            },
-          };
-          updateMember(updated);
-          return updated;
-        } else return m;
-      })
-    );
+    const member = members.find((m) => m.id === memberId);
+    if (!member) return;
+
+    const updated = {
+      ...member,
+      scores: {
+        ...member.scores,
+        [color]: Math.max(0, (member.scores?.[color] || 0) + diff)
+      }
+    };
+
+    try {
+      await updateMember(updated);
+    } catch (err) {
+      console.error("점수 업데이트 실패", err);
+    }
   };
 
   const handleRemoveMember = async (memberId) => {
     if (window.confirm("정말 이 참가자를 삭제하시겠습니까?")) {
       try {
         await deleteMember(memberId);
-        setMembers(prev => prev.filter(m => m.id !== memberId));
         alert("참가자가 삭제되었습니다.");
       } catch (err) {
         console.error("삭제 실패", err);
@@ -152,7 +169,6 @@ export default function ScorerSheet() {
       level: selectedLevels.join(", "),
       scores: scoreTemplate,
     };
-    setMembers(prev => [...prev, newMember]);
     setNewInput(null);
     try {
       await saveMember(newMember);

@@ -20,14 +20,23 @@ export default function ClimbCountMain() {
         </p>
 
         {user ? (
-          <a href="/board/list" className="btn btn-primary btn-lg shadow-sm">
+          <a href="/board/list" className="btn btn-primary btn-lg shadow-sm me-2">
             게시판으로 이동하기
           </a>
         ) : (
-          <a href="/join" className="btn btn-primary btn-lg shadow-sm">
+          <a href="/join" className="btn btn-primary btn-lg shadow-sm me-2">
             지금 참가하기
           </a>
         )}
+
+        {user && (<>
+          <a href="/challenge" className="btn btn-primary btn-lg shadow-sm me-2">
+            🎮미니게임
+          </a>
+          <a href="/teamCount" className="btn btn-primary btn-lg shadow-sm">
+            📊 조별 점수 보기
+          </a>
+        </>)}
       </div>
 
       {/* 소개 섹션 */}

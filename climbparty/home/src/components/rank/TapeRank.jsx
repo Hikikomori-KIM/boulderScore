@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import ReactECharts from "echarts-for-react";
-import { loadMembers, loadParties } from "../../firebaseFunctions";
+import { loadMembersByParty, loadParties } from "../../firebaseFunctions";
 
 const colors = ["초록", "파랑", "남색", "보라", "갈색", "검정"];
 const colorMap = {
@@ -19,15 +19,23 @@ export default function TapeRank() {
   const [selectedColor, setSelectedColor] = useState("파랑");
   const chartRef = useRef();
 
+  // 파티 리스트는 처음 한 번만 로드
   useEffect(() => {
-    loadMembers().then(setMembers);
     loadParties().then(setParties);
   }, []);
 
-  // 1. 파티 + 테이프 필터링 (1순위만)
+  // 선택된 파티의 참가자만 불러오기
+  useEffect(() => {
+    if (!selectedPartyId) {
+      setMembers([]);
+      return;
+    }
+
+    loadMembersByParty(selectedPartyId).then(setMembers);
+  }, [selectedPartyId]);
+
   const filtered = members
-    .filter((m) => m.partyId === selectedPartyId)
-    .filter((m) => m.level?.split(",")[0]?.trim() === selectedColor) // ✅ 1순위만 필터링
+    .filter((m) => m.level?.split(",")[0]?.trim() === selectedColor)
     .map((m) => {
       const allScores = colors.map((color) => m.scores?.[color] || 0);
       const total = allScores.reduce((a, b) => a + b, 0);
@@ -37,9 +45,8 @@ export default function TapeRank() {
         total
       };
     })
-    .sort((a, b) => b.total - a.total); // 총점으로 정렬
+    .sort((a, b) => b.total - a.total);
 
-  // 2. ECharts 옵션 구성
   const option = {
     grid: {
       left: 20,
@@ -113,13 +120,12 @@ export default function TapeRank() {
     ]
   };
 
-  // 3. 차트 리사이징 처리
   useEffect(() => {
     if (filtered.length > 0 && chartRef.current) {
       const resizeChart = () => {
         chartRef.current.getEchartsInstance().resize();
       };
-      setTimeout(resizeChart, 150); // 지연 후 resize
+      setTimeout(resizeChart, 150);
       window.addEventListener("resize", resizeChart);
       return () => window.removeEventListener("resize", resizeChart);
     }
@@ -175,7 +181,6 @@ export default function TapeRank() {
           }}
         >
           <h5 className="text-center mb-3 fw-semibold">{selectedColor} 클리어 랭킹</h5>
-
           <div
             style={{
               width: "100%",

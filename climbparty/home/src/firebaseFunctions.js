@@ -25,6 +25,8 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { arrayUnion, arrayRemove } from "firebase/firestore";
+import {  where } from "firebase/firestore";
+import { query, orderBy } from "firebase/firestore";
 
 // ✅ 회원가입
 export const registerUser = async (email, password, name) => {
@@ -141,6 +143,16 @@ export const saveMember = async (member) => {
 // ✅ 참가자 불러오기
 export const loadMembers = async () => {
   const snapshot = await getDocs(collection(db, "members"));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+// ✅ 특정 파티의 참가자만 불러오기
+export const loadMembersByParty = async (partyId) => {
+  const q = query(
+    collection(db, "members"),
+    where("partyId", "==", partyId)
+  );
+  const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
@@ -306,9 +318,6 @@ export const addComment = async (postId, { content, author, authorId }) => {
   });
 };
 
-// ✅ 댓글 불러오기 (최신순)
-import { query, orderBy } from "firebase/firestore";
-
 export const getComments = async (postId) => {
   const commentsRef = collection(db, "posts", postId, "comments");
   const q = query(commentsRef, orderBy("createdAt", "desc"));
@@ -348,3 +357,4 @@ export async function saveOneToFiftyRecord(userId, name, time) {
     return false; // 기존 기록이 더 좋음
   }
 }
+

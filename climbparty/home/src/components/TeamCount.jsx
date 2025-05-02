@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react";
-import { loadMembers, loadParties } from "../firebaseFunctions";
+import { loadMembersByParty, loadParties } from "../firebaseFunctions";
 
 export default function TeamCount() {
   const [parties, setParties] = useState([]);
@@ -19,12 +19,22 @@ export default function TeamCount() {
     검정: "#111827",
   };
 
+  // 파티 목록은 최초 1번만
   useEffect(() => {
-    loadMembers().then(setMemberData);
     loadParties().then(setParties);
   }, []);
 
+  // 파티 선택되면 해당 파티 참가자 로드
   useEffect(() => {
+    if (!selectedPartyId) {
+      setMemberData([]);
+      setTeams([]);
+      setSelectedTeamId("");
+      return;
+    }
+
+    loadMembersByParty(selectedPartyId).then(setMemberData);
+
     const party = parties.find((p) => p.id === selectedPartyId);
     setTeams(party?.teams || []);
     setSelectedTeamId("");
@@ -39,7 +49,7 @@ export default function TeamCount() {
   }, []);
 
   const selectedMembers = memberData.filter(
-    (m) => m.partyId === selectedPartyId && m.teamId === selectedTeamId
+    (m) => m.teamId === selectedTeamId
   );
 
   const chartData = selectedMembers

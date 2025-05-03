@@ -85,6 +85,8 @@ export default function OneToFiftyGame() {
   const handleClick = (idx) => {
     if (grid[idx].top !== currentNumber) return;
 
+
+
     // ✅ 오디오 풀링 사용
     const sound = clickSounds[soundIndex];
     sound.currentTime = 0;
@@ -100,6 +102,10 @@ export default function OneToFiftyGame() {
     });
     if (currentNumber === 50) {
       setEndTime(Date.now());
+      document.body.style.overflow = "auto"; // ✅ 스크롤 다시 허용
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); // ✅ 자동 스크롤
+      }, 300);
     }
   };
 

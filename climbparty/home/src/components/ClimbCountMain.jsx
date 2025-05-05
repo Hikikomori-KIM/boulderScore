@@ -2,6 +2,7 @@ import { ShieldCheck, AlertCircle, ActivitySquare, Footprints, Zap } from "lucid
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useAuth } from "../components/AuthContext";
 
+
 export default function ClimbCountMain() {
   const { user } = useAuth();
 
@@ -18,15 +19,25 @@ export default function ClimbCountMain() {
           친구들과 함께, 점수로 즐기는 실시간 클라이밍 랭킹!
         </p>
 
-        {user ? (
-          <a href="/board/list" className="btn btn-primary btn-lg shadow-sm">
-            게시판으로 이동하기
-          </a>
-        ) : (
-          <a href="/join" className="btn btn-primary btn-lg shadow-sm">
-            지금 참가하기
-          </a>
-        )}
+        <div className="d-flex flex-column align-items-center" style={{ maxWidth: "300px", margin: "0 auto" }}>
+          {user ? (
+            <a href="/board/list" className="btn btn-outline-primary btn-lg mb-3 w-100 shadow-sm rounded-pill">
+              📝 게시판으로 이동하기
+            </a>
+          ) : (
+            <a href="/join" className="btn btn-outline-success btn-lg mb-3 w-100 shadow-sm rounded-pill">
+              🙋 지금 참가하기
+            </a>
+          )}
+          {user && <>
+            <a href="/challenge" className="btn btn-outline-dark btn-lg mb-3 w-100 shadow-sm rounded-pill">
+              🎮 미니게임
+            </a>
+            <a href="/teamCount" className="btn btn-outline-info btn-lg mb-3 w-100 shadow-sm rounded-pill">
+              📊 조별 점수 보기
+            </a>
+          </>}
+        </div>
       </div>
 
       {/* 소개 섹션 */}
@@ -67,7 +78,7 @@ export default function ClimbCountMain() {
           </li>
           <li className="list-group-item d-flex align-items-center">
             <ShieldCheck className="me-3 text-muted" />
-            다치면 상품은 지금 안됩니다 😢 꼭 안전하게 즐겨주세요!
+            다치면 상품은 지급 안됩니다 😢 꼭 안전하게 즐겨주세요!
           </li>
         </ul>
       </div>

@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import {
-  saveMember, loadMembers, deleteMember, updateMember, loadParties
+  saveMember,
+  deleteMember,
+  updateMember,
+  loadParties
 } from "../firebaseFunctions";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "../firebase";
 import { v4 as uuidv4 } from 'uuid';
 import ReactECharts from "echarts-for-react";
 
-const colors = ["검정", "갈색", "보라", "남색", "파랑", "초록"]; // ← 정렬 기준 순서
+const colors = ["검정", "갈색", "보라", "남색", "파랑", "초록"];
 const colorMap = {
   초록: "#22C55E",
   파랑: "#3B82F6",
@@ -18,38 +23,51 @@ const colorMap = {
 export default function ScorerSheet() {
   const [parties, setParties] = useState([]);
   const [selectedPartyId, setSelectedPartyId] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedTeamId, setSelectedTeamId] = useState("");
   const [teams, setTeams] = useState([]);
   const [members, setMembers] = useState([]);
   const [newInput, setNewInput] = useState(null);
 
   useEffect(() => {
     loadParties().then(setParties);
-    loadMembers().then(setMembers);
   }, []);
 
   useEffect(() => {
     const party = parties.find(p => p.id === selectedPartyId);
     setTeams(party?.teams || []);
-    setSelectedTeam("");
-  }, [selectedPartyId]);
+    setSelectedTeamId("");
+  }, [selectedPartyId, parties]);
 
-  const selectedMembers = members.filter(m => m.partyId === selectedPartyId && m.team === selectedTeam);
+  useEffect(() => {
+    if (!selectedPartyId || !selectedTeamId) return;
 
-  // ✅ 난이도 순서로 정렬
-  const sortedMembers = [...selectedMembers].sort((a, b) => {
+    const q = query(
+      collection(db, "members"),
+      where("partyId", "==", selectedPartyId),
+      where("teamId", "==", selectedTeamId)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMembers(data);
+    });
+
+    return () => unsubscribe();
+  }, [selectedPartyId, selectedTeamId]);
+
+  const sortedMembers = [...members].sort((a, b) => {
     const levelA = a.level?.split(",")[0]?.trim();
     const levelB = b.level?.split(",")[0]?.trim();
     return colors.indexOf(levelA) - colors.indexOf(levelB);
   });
 
   const chartData = sortedMembers
-  .map((m) => {
-    const scores = colors.map(color => m.scores?.[color] || 0);
-    const total = scores.reduce((a, b) => a + b, 0);
-    return { name: m.name, scores, total };
-  })
-  .sort((a, b) => b.total - a.total); // 🔥 여기만 추가!
+    .map((m) => {
+      const scores = colors.map(color => m.scores?.[color] || 0);
+      const total = scores.reduce((a, b) => a + b, 0);
+      return { name: m.name, scores, total };
+    })
+    .sort((a, b) => b.total - a.total);
 
   const chartOption = {
     grid: { left: 100, right: 60, top: 30, bottom: 30 },
@@ -98,28 +116,28 @@ export default function ScorerSheet() {
   };
 
   const handleScoreChange = async (memberId, color, diff) => {
-    setMembers(prev =>
-      prev.map(m => {
-        if (m.id === memberId) {
-          const updated = {
-            ...m,
-            scores: {
-              ...m.scores,
-              [color]: Math.max(0, m.scores[color] + diff),
-            },
-          };
-          updateMember(updated);
-          return updated;
-        } else return m;
-      })
-    );
+    const member = members.find((m) => m.id === memberId);
+    if (!member) return;
+
+    const updated = {
+      ...member,
+      scores: {
+        ...member.scores,
+        [color]: Math.max(0, (member.scores?.[color] || 0) + diff)
+      }
+    };
+
+    try {
+      await updateMember(updated);
+    } catch (err) {
+      console.error("점수 업데이트 실패", err);
+    }
   };
 
   const handleRemoveMember = async (memberId) => {
     if (window.confirm("정말 이 참가자를 삭제하시겠습니까?")) {
       try {
         await deleteMember(memberId);
-        setMembers(prev => prev.filter(m => m.id !== memberId));
         alert("참가자가 삭제되었습니다.");
       } catch (err) {
         console.error("삭제 실패", err);
@@ -134,7 +152,7 @@ export default function ScorerSheet() {
 
   const handleRegisterNewMember = async () => {
     const { name, level1, level2 } = newInput || {};
-    if (!name || !level1 || !selectedPartyId || !selectedTeam) {
+    if (!name || !level1 || !selectedPartyId || !selectedTeamId) {
       alert("파티, 조, 이름, 난이도를 입력해주세요.");
       return;
     }
@@ -146,12 +164,11 @@ export default function ScorerSheet() {
     const newMember = {
       id: uuidv4(),
       partyId: selectedPartyId,
-      team: selectedTeam,
+      teamId: selectedTeamId,
       name,
       level: selectedLevels.join(", "),
       scores: scoreTemplate,
     };
-    setMembers(prev => [...prev, newMember]);
     setNewInput(null);
     try {
       await saveMember(newMember);
@@ -186,15 +203,15 @@ export default function ScorerSheet() {
         <div className="d-flex align-items-center gap-2">
           <label className="fw-semibold mb-0">조:</label>
           <select
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
+            value={selectedTeamId}
+            onChange={(e) => setSelectedTeamId(e.target.value)}
             disabled={!selectedPartyId}
             className="form-select form-select-sm rounded-pill shadow-sm border-primary"
             style={{ width: "auto", minWidth: "120px" }}
           >
             <option value="">조 선택</option>
             {teams.map((team) => (
-              <option key={team} value={team}>{team}</option>
+              <option key={team.id} value={team.id}>{team.name}</option>
             ))}
           </select>
         </div>
@@ -233,7 +250,7 @@ export default function ScorerSheet() {
                       className="badge rounded-pill d-flex align-items-center"
                       title={`1순위: ${level1}`}
                       style={{
-                        backgroundColor: `${colorMap[level1]}20`, // 연한 배경
+                        backgroundColor: `${colorMap[level1]}20`,
                         color: colorMap[level1],
                         fontWeight: 600,
                         fontSize: "0.75rem"
@@ -244,6 +261,7 @@ export default function ScorerSheet() {
                   );
                 })()}
               </h5>
+
               <div className="d-flex flex-wrap gap-3">
                 {Object.entries(member.scores).map(([color, score]) => (
                   <div key={color} className="d-flex align-items-center gap-2">
@@ -263,7 +281,7 @@ export default function ScorerSheet() {
 
       {/* 참가자 추가 */}
       <div className="text-end mt-4 mb-3">
-        {!newInput && selectedPartyId && selectedTeam && (
+        {!newInput && selectedPartyId && selectedTeamId && (
           <button className="btn btn-success" onClick={() => setNewInput({ name: "", level1: "", level2: "" })}>
             + 참가자 추가
           </button>
@@ -314,13 +332,32 @@ export default function ScorerSheet() {
       )}
 
       {/* 차트 */}
-      {selectedTeam && chartData.length > 0 && (
-        <div className="card mt-4">
-          <div className="card-body px-0 py-3">
-            <h5 className="text-center mb-3 fw-semibold">{selectedTeam} 클리어 현황 (차트)</h5>
-            <div className="w-100 text-start" style={{ height: Math.max(chartData.length * 60, 300) }}>
-              <ReactECharts option={chartOption} style={{ height: "100%" }} />
-            </div>
+      {selectedTeamId && chartData.length > 0 && (
+        <div
+          style={{
+            width: "95vw",
+            maxWidth: "1200px",
+            margin: "0 auto",
+            background: "#fff",
+            borderRadius: "1rem",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            padding: "1rem"
+          }}
+        >
+          <h5 className="text-center mb-3 fw-semibold">
+            {teams.find((t) => t.id === selectedTeamId)?.name || "팀"} 클리어 현황 (차트)
+          </h5>
+
+          <div
+            style={{
+              width: "100%",
+              height: Math.max(chartData.length * 60, 300),
+              minHeight: "300px",
+              maxHeight: "600px",
+              overflow: "hidden"
+            }}
+          >
+            <ReactECharts option={chartOption} style={{ width: "100%", height: "100%" }} />
           </div>
         </div>
       )}

@@ -22,7 +22,7 @@ export default function ChallengeHome() {
                 <div className="reward-banner">
                     <span className="trophy-icon">🏆</span>
                     <div className="reward-text">
-                        <strong>1등에게 특별한 경품이 기다리고 있어요!</strong><br />
+                        <strong>특별한 경품이 기다리고 있어요!</strong><br />
                         🎁 지금 도전하고 랭킹에 이름을 남겨보세요!
                     </div>
                 </div>

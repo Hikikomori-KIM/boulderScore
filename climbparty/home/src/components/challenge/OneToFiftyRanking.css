@@ -1,113 +1,178 @@
-/* OneToFiftyRanking.css */
-
+/* ===== 기본 래퍼 ===== */
 .ranking-wrapper {
-    padding: 3rem 1rem;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
-    font-family: 'Segoe UI', 'Pretendard', sans-serif;
-  }
-  
-  .ranking-title {
-    font-size: 2.2rem;
-    font-weight: bold;
-    margin-bottom: 2rem;
-  }
-  
-  .top10-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 1rem;
-    margin-bottom: 3rem;
-  }
-  
-  .card {
-    padding: 1.2rem;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    color: #111827;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: transform 0.2s ease;
-  }
-  
-  .card:hover {
-    transform: scale(1.05);
-  }
-  
-  .rank-badge {
-    font-size: 1.4rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-  }
-  
-  .card-name {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 0.3rem;
-  }
-  
-  .card-time {
-    font-size: 1rem;
-    color: #4b5563;
-  }
-  
-  .card.gold {
-    border: 2px solid gold;
-  }
-  
-  .card.silver {
-    border: 2px solid silver;
-  }
-  
-  .card.bronze {
-    border: 2px solid #cd7f32;
-  }
-  
-  .ranking-subtitle {
-    font-size: 1.5rem;
-    margin: 2rem 0 1rem;
-    font-weight: 600;
-    color: #1f2937;
-  }
-  
-  .table-wrapper {
-    overflow-x: auto;
-  }
-  
-  .ranking-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  }
-  
-  .ranking-table th,
-  .ranking-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .ranking-table th {
-    background-color: #f9fafb;
-    color: #111827;
-    font-weight: 600;
-  }
-  
-  .ranking-table tbody tr.highlight {
-    background-color: #fef3c7;
-  }
-  
-  .ranking-table tbody tr:hover {
-    background-color: #f3f4f6;
-  }
-  .my-record {
-    background-color: #e0f7fa !important;
-    font-weight: bold;
-    color: #00796b;
-  }
+  padding: 3rem 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  font-family: 'Pretendard', 'Noto Sans', sans-serif;
+}
+
+.ranking-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 2.5rem;
+  color: #333;
+}
+
+/* ===== TOP 5 카드 ===== */
+.top5-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+}
+
+.rank-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.rank-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* 1~3등 강조 카드 */
+.first-place {
+  background: linear-gradient(135deg, #fffbe6, #ffe680);
+  border: 2px solid gold;
+}
+
+.second-place {
+  background: linear-gradient(135deg, #f9f9f9, #dcdcdc);
+  border: 2px solid silver;
+}
+
+.third-place {
+  background: linear-gradient(135deg, #f9f9f9, #e0b589);
+  border: 2px solid peru;
+}
+
+/* 뱃지 */
+.badge-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-emoji {
+  font-size: 1.8rem;
+}
+
+.rank-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* 이름 + 기록 */
+.rank-content {
+  text-align: right;
+}
+
+.rank-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.rank-time {
+  color: #777;
+  font-size: 1rem;
+}
+
+/* ===== 상품 카드 ===== */
+.ranking-subtitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-top: 4rem;
+  margin-bottom: 2rem;
+  color: #444;
+}
+
+.prize-list {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 4rem;
+}
+
+.prize-card {
+  background: #f9f9f9;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 150px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.prize-card:hover {
+  transform: translateY(-6px);
+}
+
+.prize-rank {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.prize-img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.prize-item {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* ===== 전체 랭킹 테이블 ===== */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.ranking-table th,
+.ranking-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ranking-table th {
+  background-color: #f9fafb;
+  color: #111827;
+  font-weight: 600;
+}
+
+.ranking-table tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+.ranking-table tr.highlight {
+  background-color: #f0f8ff; /* 배경은 부드러운 연파랑 유지 */
+  color: #333; /* 텍스트는 진한 회색으로 */
+  font-weight: 600; /* 강조는 두껍게 */
+}
+
+.ranking-table tr.my-record {
+  background-color: #ffe4e1;
+  font-weight: 600;
+}

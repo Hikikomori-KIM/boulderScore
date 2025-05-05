@@ -1,95 +1,160 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectItem } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-const gyms = ["더락클라이밍", "피커클라이밍", "볼더풀"];
-const teams = ["A조", "B조", "C조"];
-const colors = ["빨강", "파랑", "초록", "노랑"];
+export default function ProductsDetail() {
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [topNote, setTopNote] = useState("");
+  const [middleNote, setMiddleNote] = useState("");
+  const [baseNote, setBaseNote] = useState("");
+  const [intensity, setIntensity] = useState("");
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [volumes, setVolumes] = useState([{ size: "", stock: "" }]);
 
-const sampleData = [
-  {
-    name: "홍길동",
-    빨강: 3,
-    파랑: 2,
-    초록: 1,
-    노랑: 0,
-  },
-  {
-    name: "김민지",
-    빨강: 1,
-    파랑: 4,
-    초록: 2,
-    노랑: 1,
-  },
-];
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
-export default function ClimbCountUI() {
-  const [selectedGym, setSelectedGym] = useState(gyms[0]);
-  const [selectedTeam, setSelectedTeam] = useState(teams[0]);
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
+  const handleVolumeChange = (index, field, value) => {
+    const updated = [...volumes];
+    updated[index][field] = value;
+    setVolumes(updated);
+  };
 
-  const handleClear = () => {
-    alert(`${selectedTeam} - ${selectedColor} 클리어!`);
-    // 여기에 실제 데이터 업데이트 로직 연결
+  const addVolume = () => {
+    setVolumes([...volumes, { size: "", stock: "" }]);
+  };
+
+  const removeVolume = (index) => {
+    setVolumes(volumes.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert("상품이 등록되었습니다 (임시 처리)");
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <h1 className="text-3xl font-bold text-center">CLIMB COUNT</h1>
+    <div className="container-fluid">
+      <div className="row vh-100">
+        {/* 좌측 이미지 업로드 및 미리보기 */}
+        <div className="col-6 d-flex align-items-center justify-content-center bg-secondary">
+          {preview ? (
+            <img
+              src={preview}
+              alt="미리보기"
+              className="img-thumbnail"
+              style={{ width: "250px", height: "250px", objectFit: "cover" }}
+            />
+          ) : (
+            <span className="text-white">이미지를 업로드하면 미리보기가 여기에 표시됩니다</span>
+          )}
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Select onValueChange={setSelectedGym} defaultValue={selectedGym}>
-          {gyms.map((gym) => (
-            <SelectItem key={gym} value={gym}>{gym}</SelectItem>
-          ))}
-        </Select>
+        {/* 우측 입력 폼 */}
+        <div className="col-6 bg-light d-flex align-items-center justify-content-center">
+          <form onSubmit={handleSubmit} className="col-8 px-4">
+            <h2 className="fw-bold mb-4">상품 정보 입력</h2>
 
-        <Select onValueChange={setSelectedTeam} defaultValue={selectedTeam}>
-          {teams.map((team) => (
-            <SelectItem key={team} value={team}>{team}</SelectItem>
-          ))}
-        </Select>
+            <input
+              type="text"
+              className="form-control mb-3"
+              placeholder="상품명"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-        <Select onValueChange={setSelectedColor} defaultValue={selectedColor}>
-          {colors.map((color) => (
-            <SelectItem key={color} value={color}>{color}</SelectItem>
-          ))}
-        </Select>
+            <input
+              type="number"
+              className="form-control mb-3"
+              placeholder="가격"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+
+            <textarea
+              className="form-control mb-3"
+              placeholder="상품 설명"
+              rows="3"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+
+            <input type="file" className="form-control mb-3" onChange={handleImageUpload} />
+
+            <h5 className="fw-bold mt-4 mb-3">용량 및 재고</h5>
+            {volumes.map((v, i) => (
+              <div key={i} className="d-flex gap-2 mb-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="용량"
+                  value={v.size}
+                  onChange={(e) => handleVolumeChange(i, "size", e.target.value)}
+                />
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="재고"
+                  value={v.stock}
+                  onChange={(e) => handleVolumeChange(i, "stock", e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-danger"
+                  onClick={() => removeVolume(i)}
+                >
+                  삭제
+                </button>
+              </div>
+            ))}
+            <button type="button" className="btn btn-outline-dark w-100 mb-4" onClick={addVolume}>
+              + 용량 추가
+            </button>
+
+            <h5 className="fw-bold mt-4 mb-3">향수 정보</h5>
+            <input
+              type="text"
+              className="form-control mb-2"
+              placeholder="탑 노트"
+              value={topNote}
+              onChange={(e) => setTopNote(e.target.value)}
+            />
+            <input
+              type="text"
+              className="form-control mb-2"
+              placeholder="미들 노트"
+              value={middleNote}
+              onChange={(e) => setMiddleNote(e.target.value)}
+            />
+            <input
+              type="text"
+              className="form-control mb-3"
+              placeholder="베이스 노트"
+              value={baseNote}
+              onChange={(e) => setBaseNote(e.target.value)}
+            />
+
+            <select
+              className="form-select mb-4"
+              value={intensity}
+              onChange={(e) => setIntensity(e.target.value)}
+            >
+              <option value="">향수 강도 선택</option>
+              <option value="EDT">오 드 뚜왈렛 (EDT)</option>
+              <option value="EDP">오 드 퍼퓸 (EDP)</option>
+              <option value="PERFUME">퍼퓸</option>
+            </select>
+
+            <button className="btn btn-dark w-100 py-2 rounded-pill fw-semibold">상품 등록</button>
+          </form>
+        </div>
       </div>
-
-      <div className="text-center">
-        <Button onClick={handleClear} className="px-6 py-2 text-lg">
-          클리어!
-        </Button>
-      </div>
-
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">{selectedTeam} 인원별 클리어 현황</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={sampleData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              {colors.map((color) => (
-                <Bar key={color} dataKey={color} stackId="a" fill={getColorCode(color)} />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
     </div>
   );
-}
-
-function getColorCode(color) {
-  switch (color) {
-    case "빨강": return "#EF4444";
-    case "파랑": return "#3B82F6";
-    case "초록": return "#22C55E";
-    case "노랑": return "#FACC15";
-    default: return "#D1D5DB";
-  }
 }

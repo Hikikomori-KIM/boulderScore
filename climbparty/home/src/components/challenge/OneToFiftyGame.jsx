@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { getAuth } from "firebase/auth";
 import { saveOneToFiftyRecord } from "../../firebaseFunctions";
-import "./OneToFiftyGame.css";
+import styles from "./OneToFiftyGame.module.css";
+import { motion, AnimatePresence } from "framer-motion";
+
+// ✅ 오디오 풀링: 클릭 사운드 5개 미리 준비
+const clickSounds = Array.from({ length: 5 }, () => {
+  const audio = new Audio("/sounds/coin.mp3");
+  audio.volume = 0.5;
+  return audio;
+});
+let soundIndex = 0;
 
 export default function OneToFiftyGame() {
   const [grid, setGrid] = useState([]);
@@ -13,60 +21,91 @@ export default function OneToFiftyGame() {
   const [started, setStarted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recordSaved, setRecordSaved] = useState(false);
+  const [visibleCountdown, setVisibleCountdown] = useState(null); // ✅ 카운트다운 표시용
+
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "auto"; // 언마운트 시 스크롤 복구
+    };
+  }, []);
 
   useEffect(() => {
     let interval = null;
-
     if (startTime && !endTime) {
       interval = setInterval(() => {
         setElapsed(((Date.now() - startTime) / 1000).toFixed(2));
       }, 100);
     }
-
     if (endTime) {
       clearInterval(interval);
       setElapsed(((endTime - startTime) / 1000).toFixed(2));
     }
-
     return () => clearInterval(interval);
   }, [startTime, endTime]);
 
-  const startGame = () => {
+  const prepareGrid = () => {
     const top = Array.from({ length: 25 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
     const bottom = Array.from({ length: 25 }, (_, i) => i + 26).sort(() => Math.random() - 0.5);
-
     const initialGrid = top.map((num, idx) => ({
       top: num,
       bottom: bottom[idx] || null,
     }));
-
     setGrid(initialGrid);
     setCurrentNumber(1);
-    setStartTime(Date.now());
+    setStartTime(null);
     setEndTime(null);
     setElapsed(0);
-    setStarted(true);
+    setStarted(false);
     setIsSubmitted(false);
     setRecordSaved(false);
+
+    document.body.style.overflow = "auto"; // 스크롤 다시 풀기
+  };
+
+  const startCountdown = () => {
+    prepareGrid();
+
+    window.scrollTo(0, 0);
+    document.body.style.overflow = "hidden"; // 스크롤 막기
+
+    const steps = ["3", "2", "1"];
+    steps.forEach((step, index) => {
+      setTimeout(() => {
+        setVisibleCountdown(step);
+      }, index * 1000);
+    });
+
+    setTimeout(() => {
+      setVisibleCountdown(null);
+      setStarted(true);
+      setStartTime(Date.now());
+    }, steps.length * 1000);
   };
 
   const handleClick = (idx) => {
     if (grid[idx].top !== currentNumber) return;
 
-    setCurrentNumber((prev) => prev + 1);
 
+
+    // ✅ 오디오 풀링 사용
+    const sound = clickSounds[soundIndex];
+    sound.currentTime = 0;
+    sound.play();
+    soundIndex = (soundIndex + 1) % clickSounds.length; // 순환
+
+    setCurrentNumber((prev) => prev + 1);
     setGrid((prevGrid) => {
       const newGrid = [...prevGrid];
       const next = newGrid[idx].bottom;
-      newGrid[idx] = {
-        top: next,
-        bottom: null,
-      };
+      newGrid[idx] = { top: next, bottom: null };
       return newGrid;
     });
-
     if (currentNumber === 50) {
       setEndTime(Date.now());
+      document.body.style.overflow = "auto"; // ✅ 스크롤 다시 허용
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); // ✅ 자동 스크롤
+      }, 300);
     }
   };
 
@@ -76,33 +115,44 @@ export default function OneToFiftyGame() {
       alert("로그인 후 기록을 저장할 수 있습니다.");
       return;
     }
-
     const saved = await saveOneToFiftyRecord(user.uid, user.displayName || "이름없음", elapsed);
     setRecordSaved(saved);
     setIsSubmitted(true);
   };
 
   return (
-    <div className="one-to-fifty-container">
-      <div className="header-box glass">
-        <h2 className="title">1 to 50</h2>
-        {started && <p className="timer">⏱️ {elapsed}초</p>}
+    <div className={styles.container}>
+      <div className={`${styles.headerBox} ${styles.glass}`}>
+        <h2 className={styles.title}>1 to 50</h2>
+        <div className={styles.timerBox}>
+          {started && <p className={styles.timer}>⏱️ {elapsed}초</p>}
+        </div>
+        {(started || grid.length > 0) && (
+          <button className={`${styles.retryBtn} ${styles.glass}`} onClick={startCountdown}>
+            🔄 다시하기
+          </button>
+        )}
       </div>
 
-      {!started && (
-        <button className="start-btn glass" onClick={startGame}>
+      {!started && grid.length === 0 && (
+        <button className={`${styles.startBtn} ${styles.glass}`} onClick={startCountdown}>
           게임 시작
         </button>
       )}
 
-      {started && (
-        <div className="grid">
+      {/* ✅ 카운트다운 숫자 표시 */}
+      {visibleCountdown && (
+        <div className={styles.countdown}>{visibleCountdown}</div>
+      )}
+
+      {grid.length > 0 && (
+        <div className={styles.grid}>
           {grid.map((cell, idx) => (
             <button
               key={idx}
-              className="grid-btn glass"
+              className={`${styles.gridBtn} ${styles.glass}`}
               onClick={() => handleClick(idx)}
-              disabled={cell.top === null}
+              disabled={cell.top === null || !started}
             >
               <AnimatePresence mode="wait">
                 {cell.top !== null && (
@@ -111,7 +161,7 @@ export default function OneToFiftyGame() {
                     initial={{ opacity: 0, scale: 0.6 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.6 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.25 }}
                   >
                     {cell.top}
                   </motion.span>
@@ -123,16 +173,16 @@ export default function OneToFiftyGame() {
       )}
 
       {endTime && !isSubmitted && (
-        <div className="record-box glass">
+        <div className={`${styles.recordBox} ${styles.glass}`}>
           <p>기록을 저장하시겠습니까?</p>
-          <button className="submit-btn" onClick={submitRecord}>
+          <button className={styles.submitBtn} onClick={submitRecord}>
             기록 제출
           </button>
         </div>
       )}
 
       {isSubmitted && (
-        <div className="result-box glass">
+        <div className={`${styles.resultBox} ${styles.glass}`}>
           <p>
             {recordSaved
               ? "🎉 기록이 저장되었습니다!"

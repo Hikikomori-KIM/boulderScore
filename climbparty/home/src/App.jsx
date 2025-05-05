@@ -20,7 +20,7 @@ import AdminPartyTeamPage from './components/admin/AdminPartyTeamPage';
 import AdminRankingPage from './components/admin/AdminRankingPage';
 import AdminPartyTape from './components/admin/AdminPartyTape';
 import ScorerSheet from './components/ScorerSheet';
-import TapeRank from './components/rank/tapeRank';
+import TapeRank from './components/rank/TapeRank';
 import Terms from './components/template/Terms';
 import Privacy from './components/template/Privacy';
 import BoardList from './components/board/boardList';

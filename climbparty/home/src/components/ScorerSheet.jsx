@@ -263,16 +263,23 @@ export default function ScorerSheet() {
               </h5>
 
               <div className="d-flex flex-wrap gap-3">
-                {Object.entries(member.scores).map(([color, score]) => (
-                  <div key={color} className="d-flex align-items-center gap-2">
-                    <span className="badge rounded-pill text-white" style={{ backgroundColor: colorMap[color] }}>
-                      {color}
-                    </span>
-                    <button onClick={() => handleScoreChange(member.id, color, -1)} className="btn btn-outline-secondary btn-sm">–</button>
-                    <span className="px-2 fw-bold">{score}</span>
-                    <button onClick={() => handleScoreChange(member.id, color, +1)} className="btn btn-outline-primary btn-sm">+</button>
-                  </div>
-                ))}
+                {(() => {
+                  const levels = member.level?.split(",").map(l => l.trim()) || [];
+                  const rest = colors.filter(c => levels.indexOf(c) === -1 && member.scores?.[c] !== undefined);
+                  const displayOrder = [...levels, ...rest];
+
+                  return displayOrder.map(color => (
+                    <div key={color} className="d-flex align-items-center gap-2">
+                      <span className="badge rounded-pill text-white" style={{ backgroundColor: colorMap[color] }}>
+                        {color}
+                      </span>
+                      <button onClick={() => handleScoreChange(member.id, color, -1)} className="btn btn-outline-secondary btn-sm">–</button>
+                      <span className="px-2 fw-bold">{member.scores?.[color] || 0}</span>
+                      <button onClick={() => handleScoreChange(member.id, color, +1)} className="btn btn-outline-primary btn-sm">+</button>
+                    </div>
+                  ));
+                })()}
+
               </div>
             </div>
           </div>

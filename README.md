@@ -67,7 +67,7 @@
 ---
 
 ### 🌐 배포 링크 
-> `https://climbparty.web.app/`  
+> 🔗 **[https://climbparty.web.app](https://climbparty.web.app)**  
 
 
 ---

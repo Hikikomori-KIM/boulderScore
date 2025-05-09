@@ -2,14 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { saveOneToFiftyRecord } from "../../firebaseFunctions";
 import styles from "./OneToFiftyGame.module.css";
-import GridButton from "./GridButton"; // ✅ 버튼 컴포넌트 import
-
-const clickSounds = Array.from({ length: 5 }, () => {
-  const audio = new Audio("/sounds/coin.mp3");
-  audio.volume = 0.5;
-  return audio;
-});
-let soundIndex = 0;
+import GridButton from "./GridButton";
 
 export default function OneToFiftyGame() {
   const [grid, setGrid] = useState([]);
@@ -21,11 +14,23 @@ export default function OneToFiftyGame() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recordSaved, setRecordSaved] = useState(false);
   const [visibleCountdown, setVisibleCountdown] = useState(null);
+  const [clickSounds, setClickSounds] = useState([]); // ✅ 오디오 상태
+  let soundIndex = 0; // ✅ 전역 인덱스
 
   useEffect(() => {
     return () => {
       document.body.style.overflow = "auto";
     };
+  }, []);
+
+  // ✅ 오디오 비동기 로딩
+  useEffect(() => {
+    const sounds = Array.from({ length: 5 }, () => {
+      const audio = new Audio("/sounds/coin.mp3");
+      audio.volume = 0.5;
+      return audio;
+    });
+    setClickSounds(sounds);
   }, []);
 
   useEffect(() => {
@@ -63,7 +68,6 @@ export default function OneToFiftyGame() {
 
   const startCountdown = () => {
     prepareGrid();
-
     window.scrollTo(0, 0);
     document.body.style.overflow = "hidden";
 
@@ -84,10 +88,13 @@ export default function OneToFiftyGame() {
   const handleClick = (idx) => {
     if (grid[idx].top !== currentNumber) return;
 
+    // ✅ 클릭 사운드 재생
     const sound = clickSounds[soundIndex];
-    sound.currentTime = 0;
-    sound.play();
-    soundIndex = (soundIndex + 1) % clickSounds.length;
+    if (sound) {
+      sound.currentTime = 0;
+      sound.play();
+      soundIndex = (soundIndex + 1) % clickSounds.length;
+    }
 
     setCurrentNumber((prev) => prev + 1);
     setGrid((prevGrid) => {

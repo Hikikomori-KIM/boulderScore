@@ -12,9 +12,8 @@ export default function GridButton({ cell, idx, onClick, started }) {
       {cell.top && (
         <motion.span
           key={cell.top}
-          initial={{ opacity: 0, scale: 0.6 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.6 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
         >
           {cell.top}

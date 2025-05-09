@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { saveOneToFiftyRecord } from "../../firebaseFunctions";
 import styles from "./OneToFiftyGame.module.css";
-import { motion, AnimatePresence } from "framer-motion";
+import GridButton from "./GridButton"; // ✅ 버튼 컴포넌트 import
 
-// ✅ 오디오 풀링: 클릭 사운드 5개 미리 준비
 const clickSounds = Array.from({ length: 5 }, () => {
   const audio = new Audio("/sounds/coin.mp3");
   audio.volume = 0.5;
@@ -21,11 +20,11 @@ export default function OneToFiftyGame() {
   const [started, setStarted] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recordSaved, setRecordSaved] = useState(false);
-  const [visibleCountdown, setVisibleCountdown] = useState(null); // ✅ 카운트다운 표시용
+  const [visibleCountdown, setVisibleCountdown] = useState(null);
 
   useEffect(() => {
     return () => {
-      document.body.style.overflow = "auto"; // 언마운트 시 스크롤 복구
+      document.body.style.overflow = "auto";
     };
   }, []);
 
@@ -59,14 +58,14 @@ export default function OneToFiftyGame() {
     setIsSubmitted(false);
     setRecordSaved(false);
 
-    document.body.style.overflow = "auto"; // 스크롤 다시 풀기
+    document.body.style.overflow = "auto";
   };
 
   const startCountdown = () => {
     prepareGrid();
 
     window.scrollTo(0, 0);
-    document.body.style.overflow = "hidden"; // 스크롤 막기
+    document.body.style.overflow = "hidden";
 
     const steps = ["3", "2", "1"];
     steps.forEach((step, index) => {
@@ -85,13 +84,10 @@ export default function OneToFiftyGame() {
   const handleClick = (idx) => {
     if (grid[idx].top !== currentNumber) return;
 
-
-
-    // ✅ 오디오 풀링 사용
     const sound = clickSounds[soundIndex];
     sound.currentTime = 0;
     sound.play();
-    soundIndex = (soundIndex + 1) % clickSounds.length; // 순환
+    soundIndex = (soundIndex + 1) % clickSounds.length;
 
     setCurrentNumber((prev) => prev + 1);
     setGrid((prevGrid) => {
@@ -100,11 +96,12 @@ export default function OneToFiftyGame() {
       newGrid[idx] = { top: next, bottom: null };
       return newGrid;
     });
+
     if (currentNumber === 50) {
       setEndTime(Date.now());
-      document.body.style.overflow = "auto"; // ✅ 스크롤 다시 허용
+      document.body.style.overflow = "auto";
       setTimeout(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); // ✅ 자동 스크롤
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       }, 300);
     }
   };
@@ -140,34 +137,18 @@ export default function OneToFiftyGame() {
         </button>
       )}
 
-      {/* ✅ 카운트다운 숫자 표시 */}
-      {visibleCountdown && (
-        <div className={styles.countdown}>{visibleCountdown}</div>
-      )}
+      {visibleCountdown && <div className={styles.countdown}>{visibleCountdown}</div>}
 
       {grid.length > 0 && (
         <div className={styles.grid}>
           {grid.map((cell, idx) => (
-            <button
+            <GridButton
               key={idx}
-              className={`${styles.gridBtn} ${styles.glass}`}
-              onClick={() => handleClick(idx)}
-              disabled={cell.top === null || !started}
-            >
-              <AnimatePresence mode="wait">
-                {cell.top !== null && (
-                  <motion.span
-                    key={cell.top + "_" + idx}
-                    initial={{ opacity: 0, scale: 0.6 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.6 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    {cell.top}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
+              cell={cell}
+              idx={idx}
+              onClick={handleClick}
+              started={started}
+            />
           ))}
         </div>
       )}

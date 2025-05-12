@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getAuth } from "firebase/auth";
 import { saveOneToFiftyRecord } from "../../firebaseFunctions";
 import styles from "./OneToFiftyGame.module.css";
@@ -14,23 +14,44 @@ export default function OneToFiftyGame() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recordSaved, setRecordSaved] = useState(false);
   const [visibleCountdown, setVisibleCountdown] = useState(null);
-  const [clickSounds, setClickSounds] = useState([]); // ✅ 오디오 상태
-  let soundIndex = 0; // ✅ 전역 인덱스
+
+  // ✅ Web Audio API 관련 Ref
+  const audioCtxRef = useRef(null);
+  const bufferRef = useRef(null);
+
+  // ✅ 오디오 초기화 (mp3 버퍼 로드)
+  useEffect(() => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtxRef.current = ctx;
+
+    fetch("/sounds/coin.mp3")
+      .then(res => res.arrayBuffer())
+      .then(arrayBuffer => ctx.decodeAudioData(arrayBuffer))
+      .then(decoded => {
+        bufferRef.current = decoded;
+      });
+
+    return () => {
+      ctx.close();
+    };
+  }, []);
+
+  // ✅ 고성능 사운드 재생 함수
+  const playClickSound = () => {
+    const ctx = audioCtxRef.current;
+    const buffer = bufferRef.current;
+    if (!ctx || !buffer) return;
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+  };
 
   useEffect(() => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, []);
-
-  // ✅ 오디오 비동기 로딩
-  useEffect(() => {
-    const sounds = Array.from({ length: 5 }, () => {
-      const audio = new Audio("/sounds/coin.mp3");
-      audio.volume = 0.5;
-      return audio;
-    });
-    setClickSounds(sounds);
   }, []);
 
   useEffect(() => {
@@ -88,13 +109,7 @@ export default function OneToFiftyGame() {
   const handleClick = (idx) => {
     if (grid[idx].top !== currentNumber) return;
 
-    // ✅ 클릭 사운드 재생
-    const sound = clickSounds[soundIndex];
-    if (sound) {
-      sound.currentTime = 0;
-      sound.play();
-      soundIndex = (soundIndex + 1) % clickSounds.length;
-    }
+    playClickSound(); // ✅ 클릭 시 고성능 사운드 재생
 
     setCurrentNumber((prev) => prev + 1);
     setGrid((prevGrid) => {

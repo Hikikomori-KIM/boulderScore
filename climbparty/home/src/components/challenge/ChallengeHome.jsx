@@ -42,16 +42,21 @@ export default function ChallengeHome() {
                 </div>
 
                 {/* 향후 추가 게임 예시 */}
-                {/* <div className="challenge-card glass">
-          <div className="card-header">
-            <h3>기억력 테스트</h3>
-            <span className="badge">🧠 집중력</span>
-          </div>
-          <p className="card-desc">패턴을 기억하고 순서를 맞춰보세요! 곧 출시됩니다.</p>
-          <div className="card-actions">
-            <button className="btn btn-secondary disabled">게임 준비 중</button>
-          </div>
-        </div> */}
+                <div className="challenge-card glass">
+                    <div className="card-header">
+                        <h3>사과 10 퍼즐</h3>
+                        <span className="badge">🍎 계산 퍼즐</span>
+                    </div>
+                    <p className="card-desc">
+                        사과를 드래그해서 합이 10이 되도록 맞춰보세요!<br />
+                        <strong className="text-danger">⚠️ 이 게임은 PC에서만 플레이 가능합니다.</strong>
+                    </p>
+                    <div className="card-actions">
+                        <button className="btn btn-primary" onClick={() => handleGo("/challenge/apple-ten/AppleTenGame")}>게임 시작</button>
+                        <button className="btn btn-outline-dark" onClick={() => handleGo("/challenge/apple-ten/rank")}>랭킹 보기</button>
+                    </div>
+                </div>
+
             </div>
         </div>
     );

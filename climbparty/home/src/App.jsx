@@ -32,6 +32,9 @@ import "react-toastify/dist/ReactToastify.css";
 import OneToFiftyGame from './components/challenge/OneToFiftyGame';
 import OneToFiftyRanking from './components/challenge/OneToFiftyRanking';
 import ChallengeHome from './components/challenge/ChallengeHome';
+import AppleTenGame from './components/challenge/apple-ten/AppleTenGame';
+import AppleTenRanking from './components/challenge/apple-ten/AppleTenRank';
+import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
 
 export default function App() {
   return (
@@ -124,7 +127,7 @@ function AppContent() {
         {/* 게임 페이지 */}
         <Route path="/challenge" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <ChallengeHome/>
+            <ChallengeHome />
           </RoleProtectedRoute>
         } />
         <Route path="/challenge/one-to-fifty" element={
@@ -137,6 +140,17 @@ function AppContent() {
             <OneToFiftyRanking />
           </RoleProtectedRoute>
         } />
+        <Route path="/challenge/apple-ten/AppleTenGame" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <AppleTenGame />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/challenge/apple-ten/rank" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <AppleTenRank />
+          </RoleProtectedRoute>
+        } />
+
         {/* ✅ 어드민 전용 보호라우트*/}
         <Route path="/ScorerSheet" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>

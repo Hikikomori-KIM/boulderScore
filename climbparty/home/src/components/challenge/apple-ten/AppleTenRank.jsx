@@ -8,6 +8,11 @@ export default function AppleTenRank() {
   const [records, setRecords] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
+  const prizes = [
+    { rank: 1, item: "5000 보조배터리", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747038395/2%EB%B2%88%EC%A7%B8_%EA%B2%8C%EC%9E%84_%EC%83%81%ED%92%88_dmhvyj.png" },
+    { rank: 2, item: "5000 보조배터리", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747038395/2%EB%B2%88%EC%A7%B8_%EA%B2%8C%EC%9E%84_%EC%83%81%ED%92%88_dmhvyj.png" },
+  ];
+
   useEffect(() => {
     const fetchRecords = async () => {
       const ref = collection(db, "appleTenRecords");
@@ -30,6 +35,9 @@ export default function AppleTenRank() {
     <div className="ranking-wrapper">
       <h2 className="ranking-title">🍏 Apple 10 랭킹</h2>
       <h3 className="ranking-subtitle">🏆 TOP 5</h3>
+      <h2 className="fw-bold">6월6일 00시마감 </h2>
+      <h4>1등 동점자 생기면 룰 추가! or</h4>
+      <h4>상품 분배 사다리 타기</h4>
 
       <div className="top5-list">
         {records.slice(0, 5).map((record, index) => (
@@ -47,6 +55,21 @@ export default function AppleTenRank() {
               <div className="rank-name">{record.name}</div>
               <div className="rank-score">{record.score}점</div>
             </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 상품 안내 섹션 */}
+      <h3 className="ranking-subtitle">🎁 상품 안내</h3>
+
+      <div className="prize-list">
+        {prizes.map((prize) => (
+          <div className="prize-card" key={prize.rank}>
+            <div className="prize-rank">
+              {prize.rank === 1 ? "🥇 1등" : prize.rank === 2 ? "🥈 2등" : "🥉 3등"}
+            </div>
+            <img src={prize.image} alt={prize.item} className="prize-img" />
+            <div className="prize-item">{prize.item}</div>
           </div>
         ))}
       </div>

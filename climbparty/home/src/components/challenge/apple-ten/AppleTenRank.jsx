@@ -9,8 +9,10 @@ export default function AppleTenRank() {
   const [currentUser, setCurrentUser] = useState(null);
 
   const prizes = [
-    { rank: 1, item: "5000 보조배터리", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747038395/2%EB%B2%88%EC%A7%B8_%EA%B2%8C%EC%9E%84_%EC%83%81%ED%92%88_dmhvyj.png" },
+    { rank: 1, item: "그랩댓 홀드 솔", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747039876/%EA%B7%B8%EB%9E%A9%EB%8C%93_vnrrao.png" },
     { rank: 2, item: "5000 보조배터리", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747038395/2%EB%B2%88%EC%A7%B8_%EA%B2%8C%EC%9E%84_%EC%83%81%ED%92%88_dmhvyj.png" },
+    { rank: 3, item: "5000 보조배터리", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747038395/2%EB%B2%88%EC%A7%B8_%EA%B2%8C%EC%9E%84_%EC%83%81%ED%92%88_dmhvyj.png" },
+
   ];
 
   useEffect(() => {

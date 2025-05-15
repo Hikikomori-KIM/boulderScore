@@ -18,6 +18,9 @@ export default function ChallengeHome() {
                 <p className="challenge-subtitle">
                     가볍게 즐기고, <strong className="highlight">기록</strong>으로 경쟁해보세요!
                 </p>
+                <p className="challenge-subtitle">
+                    새로고침 한 번 해주시면 <strong className="highlight">최신버전으로</strong> 업데이트 됩니다!
+                </p>
 
                 <div className="reward-banner">
                     <span className="trophy-icon">🏆</span>

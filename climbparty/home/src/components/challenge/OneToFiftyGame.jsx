@@ -14,6 +14,7 @@ export default function OneToFiftyGame() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recordSaved, setRecordSaved] = useState(false);
   const [visibleCountdown, setVisibleCountdown] = useState(null);
+  const [countingDown, setCountingDown] = useState(false);
 
   // ✅ Web Audio API 관련 Ref
   const audioCtxRef = useRef(null);
@@ -88,6 +89,8 @@ export default function OneToFiftyGame() {
   };
 
   const startCountdown = () => {
+    if (countingDown) return; // 중복 방지
+    setCountingDown(true);
     prepareGrid();
     window.scrollTo(0, 0);
     document.body.style.overflow = "hidden";
@@ -99,17 +102,22 @@ export default function OneToFiftyGame() {
       }, index * 1000);
     });
 
+    // 마지막만 실행
+    const countdownDuration = steps.length * 1000;
     setTimeout(() => {
       setVisibleCountdown(null);
       setStarted(true);
       setStartTime(Date.now());
-    }, steps.length * 1000);
+      setCountingDown(false);
+    }, countdownDuration);
   };
 
+
   const handleClick = (idx) => {
+    if (countingDown || !started) return; // 카운트다운 중엔 클릭 금지
     if (grid[idx].top !== currentNumber) return;
 
-    playClickSound(); // ✅ 클릭 시 고성능 사운드 재생
+    playClickSound();
 
     setCurrentNumber((prev) => prev + 1);
     setGrid((prevGrid) => {
@@ -127,6 +135,7 @@ export default function OneToFiftyGame() {
       }, 300);
     }
   };
+
 
   const submitRecord = async () => {
     const user = getAuth().currentUser;
@@ -147,16 +156,26 @@ export default function OneToFiftyGame() {
           {started && <p className={styles.timer}>⏱️ {elapsed}초</p>}
         </div>
         {(started || grid.length > 0) && (
-          <button className={`${styles.retryBtn} ${styles.glass}`} onClick={startCountdown}>
+          <button
+            className={`${styles.retryBtn} ${styles.glass}`}
+            onClick={startCountdown}
+            disabled={countingDown}
+          >
             🔄 다시하기
           </button>
+
         )}
       </div>
 
       {!started && grid.length === 0 && (
-        <button className={`${styles.startBtn} ${styles.glass}`} onClick={startCountdown}>
+        <button
+          className={`${styles.startBtn} ${styles.glass}`}
+          onClick={startCountdown}
+          disabled={countingDown}
+        >
           게임 시작
         </button>
+
       )}
 
       {visibleCountdown && <div className={styles.countdown}>{visibleCountdown}</div>}

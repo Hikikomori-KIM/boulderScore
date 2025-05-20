@@ -2,35 +2,21 @@ import React, { useEffect, useRef, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { db } from "../../../firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import "./AppleTenGame.css";
+import styles from "./AppleTenGamePC.module.css";
 
 function getRandomApple() {
   const rand = Math.random();
-  if (rand < 0.1111) return 1;
-  else if (rand < 0.2222) return 2;
-  else if (rand < 0.3333) return 3;
-  else if (rand < 0.4444) return 4;
-  else if (rand < 0.5555) return 5;
-  else if (rand < 0.6666) return 6;
-  else if (rand < 0.7777) return 7;
-  else if (rand < 0.8888) return 8;
-  else return 9;
+  return Math.floor(rand * 9) + 1;
 }
 
 function generateAppleGrid(rows = 10, cols = 17) {
-  const grid = [];
-  for (let r = 0; r < rows; r++) {
-    const row = [];
-    for (let c = 0; c < cols; c++) {
-      row.push(getRandomApple());
-    }
-    grid.push(row);
-  }
-  return grid;
+  return Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => getRandomApple())
+  );
 }
 
-export default function AppleTenGame() {
-  const isMobile = window.innerWidth <= 768; // ✅ 모바일 판단
+export default function AppleTenGamePC() {
+  const isMobile = window.innerWidth <= 768;
   const [grid, setGrid] = useState([]);
   const [selected, setSelected] = useState([]);
   const [score, setScore] = useState(0);
@@ -69,7 +55,7 @@ export default function AppleTenGame() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          if (bgmRef.current) bgmRef.current.pause();
+          bgmRef.current?.pause();
           return 0;
         }
         return prev - 1;
@@ -77,22 +63,20 @@ export default function AppleTenGame() {
     }, 1000);
     return () => clearInterval(timer);
   }, [started]);
+
   useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
     if (isMobile) {
       document.documentElement.style.height = "100%";
       document.body.style.height = "100%";
-      const root = document.getElementById("root");
-      if (root) root.style.height = "100%";
+      document.getElementById("root")?.style.setProperty("height", "100%");
     }
-
     return () => {
       document.documentElement.style.height = "";
       document.body.style.height = "";
-      const root = document.getElementById("root");
-      if (root) root.style.height = "";
+      document.getElementById("root")?.style.removeProperty("height");
     };
   }, []);
+
   useEffect(() => {
     if (bgmRef.current && started) {
       bgmOn ? bgmRef.current.play().catch(console.warn) : bgmRef.current.pause();
@@ -195,7 +179,6 @@ export default function AppleTenGame() {
         const y = rowIndex * cellHeight + paddingTop;
         const centerX = x + cellWidth / 2;
         const centerY = y + cellHeight / 2;
-
         if (
           centerX >= correctedStartX &&
           centerX <= correctedEndX &&
@@ -210,30 +193,24 @@ export default function AppleTenGame() {
     setSelected(selectedCells);
   };
 
-
   const handleMouseUp = () => {
     if (!isDragging || !dragStart || !dragCurrent || !started) return;
     setIsDragging(false);
 
-    const total = selected.reduce((acc, { row, col }) => acc + grid[row][col], 0);
+    const uniqueSelected = selected.filter(
+      (cell, index, self) =>
+        index === self.findIndex((c) => c.row === cell.row && c.col === cell.col)
+    );
+
+    const total = uniqueSelected.reduce((acc, { row, col }) => acc + grid[row][col], 0);
     if (total === 10) {
-      successSoundRef.current?.play().catch(() => { });
-
-      // ✅ 사과를 바로 null 처리하고 점수 증가
+      successSoundRef.current?.play().catch(() => {});
       const newGrid = grid.map((row) => [...row]);
-      selected.forEach(({ row, col }) => {
-        newGrid[row][col] = null;
-      });
+      uniqueSelected.forEach(({ row, col }) => (newGrid[row][col] = null));
       setGrid(newGrid);
-      setScore((prev) => prev + selected.length);
-
-      // ✅ 시각적 효과용으로만 disappearingCells 설정
-      setDisappearingCells(selected.map((cell) => ({ ...cell })));
-
-      // ✅ 0.4초 뒤에 disappearingCells만 제거
-      setTimeout(() => {
-        setDisappearingCells([]);
-      }, 400);
+      setScore((prev) => prev + uniqueSelected.length);
+      setDisappearingCells(uniqueSelected.map((cell) => ({ ...cell })));
+      setTimeout(() => setDisappearingCells([]), 400);
     }
 
     setSelected([]);
@@ -242,19 +219,15 @@ export default function AppleTenGame() {
   };
 
   const handleStart = () => {
-    // 1단계: started를 false로 껐다가
     setStarted(false);
-
-    // 2단계: 약간의 delay 후 다시 true로 설정
     setTimeout(() => {
       setGrid(generateAppleGrid());
       setScore(0);
-      setTimeLeft(120); // 또는 4로 테스트용
+      setTimeLeft(120);
       setIsSubmitted(false);
       setRecordSaved(false);
       setStarted(true);
-      // bgmRef.current?.play().catch(() => { });
-    }, 50); // 최소한의 딜레이 주면 started가 변화로 인식됨
+    }, 50);
   };
 
   const handleReset = () => {
@@ -270,14 +243,14 @@ export default function AppleTenGame() {
   };
 
   const toggleBgm = () => setBgmOn((prev) => !prev);
-  const isSelected = (row, col) => selected.some((cell) => cell.row === row && cell.col === col);
+  const isSelected = (row, col) => selected.some((c) => c.row === row && c.col === col);
   const getDisappearClass = (row, col) =>
-    disappearingCells.find((c) => c.row === row && c.col === col) ? "disappear" : "";
+    disappearingCells.find((c) => c.row === row && c.col === col) ? styles.disappear : "";
   const progressPercent = (timeLeft / 120) * 100;
 
   if (isMobile) {
     return (
-      <div className="apple-mobile-block">
+      <div className={styles.appleMobileBlock}>
         <h2>⚠️ Apple 10 게임은 현재 PC에서만 플레이할 수 있어요.</h2>
         <p>더 넓은 화면에서 드래그가 원활하게 작동하도록 PC 버전만 지원됩니다.</p>
       </div>
@@ -286,23 +259,24 @@ export default function AppleTenGame() {
 
   return (
     <div
-      className="apple-game-wrapper"
+      className={styles.appleGameWrapper}
       ref={wrapperRef}
       style={{ transform: `scale(${scale})`, transformOrigin: "top center" }}
     >
-      <div className="score-board">점수: {score}</div>
+      <div className={styles.scoreBoard}>점수: {score}</div>
+
       {!started ? (
-        <div className="start-screen">
-          <h1 className="start-title">🍎 Apple 10</h1>
-          <p className="start-subtitle">사과를 선택해서 합이 10이 되도록 하세요</p>
+        <div className={styles.startScreen}>
+          <h1 className={styles.startTitle}>🍎 Apple 10</h1>
+          <p className={styles.startSubtitle}>사과를 선택해서 합이 10이 되도록 하세요</p>
           <button className="btn btn-success" onClick={handleStart}>
             게임 시작
           </button>
         </div>
       ) : (
-        <div className="game-main">
+        <div className={styles.gameMain}>
           <div
-            className="grid-container"
+            className={styles.gridContainer}
             ref={containerRef}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -311,25 +285,25 @@ export default function AppleTenGame() {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            <div className="apple-board">
+            <div className={styles.appleBoard}>
               {grid.map((row, rowIndex) => (
-                <div key={rowIndex} className="apple-row">
+                <div key={rowIndex} className={styles.appleRow}>
                   {row.map((num, colIndex) => {
-                    if (num === null) return <div key={colIndex} className="apple-cell empty" />;
+                    if (num === null) return <div key={colIndex} className={`${styles.appleCell} ${styles.empty}`} />;
                     const selectedNow = isSelected(rowIndex, colIndex);
                     const disappearClass = getDisappearClass(rowIndex, colIndex);
                     return (
                       <div
                         key={colIndex}
-                        className={`apple-cell ${selectedNow ? "selected" : ""} ${disappearClass}`}
+                        className={`${styles.appleCell} ${selectedNow ? styles.selected : ""} ${disappearClass}`}
                       >
                         <img
                           src={selectedNow ? "/apple2.png" : "/apple.png"}
                           alt="apple"
-                          className="apple-img"
+                          className={styles.appleImg}
                           draggable={false}
                         />
-                        <span className="apple-number">{num}</span>
+                        <span className={styles.appleNumber}>{num}</span>
                       </div>
                     );
                   })}
@@ -338,7 +312,7 @@ export default function AppleTenGame() {
             </div>
             {isDragging && dragStart && dragCurrent && (
               <div
-                className="selection-rectangle"
+                className={styles.selectionRectangle}
                 style={{
                   left: `${Math.min(dragStart.x, dragCurrent.x)}px`,
                   top: `${Math.min(dragStart.y, dragCurrent.y)}px`,
@@ -348,27 +322,30 @@ export default function AppleTenGame() {
               />
             )}
           </div>
-          <div className="time-bar-container">
-            <div className="time-bar" style={{ height: `${progressPercent}%` }}></div>
-            <div className="time-text">{timeLeft}s</div>
+
+          <div className={styles.timeBarContainer}>
+            <div className={styles.timeBar} style={{ height: `${progressPercent}%` }}></div>
+            <div className={styles.timeText}>{timeLeft}s</div>
           </div>
         </div>
       )}
-      <div className="footer-controls">
+
+      <div className={styles.footerControls}>
         {started && timeLeft > 0 && !isSubmitted && (
-          <div className="footer-controls">
+          <>
             <button className="btn btn-success" onClick={handleReset}>
               Reset
             </button>
             <button className="btn btn-success" onClick={toggleBgm}>
               {bgmOn ? "BGM 🔈" : "BGM 🔇"}
             </button>
-          </div>
+          </>
         )}
       </div>
+
       {timeLeft === 0 && (
-        <div className="game-over-overlay">
-          <div className="game-over-content">
+        <div className={styles.gameOverOverlay}>
+          <div className={styles.gameOverContent}>
             <h2>🍎 게임 오버!</h2>
             <p>최종 점수: {score}점</p>
             {!isSubmitted ? (
@@ -391,6 +368,7 @@ export default function AppleTenGame() {
           </div>
         </div>
       )}
+
       <audio ref={bgmRef} loop src="/sounds/3.mp3" />
       <audio ref={successSoundRef} src="/sounds/success.wav" />
     </div>

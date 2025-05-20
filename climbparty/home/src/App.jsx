@@ -32,10 +32,11 @@ import "react-toastify/dist/ReactToastify.css";
 import OneToFiftyGame from './components/challenge/OneToFiftyGame';
 import OneToFiftyRanking from './components/challenge/OneToFiftyRanking';
 import ChallengeHome from './components/challenge/ChallengeHome';
-import AppleTenGame from './components/challenge/apple-ten/AppleTenGame';
+// import AppleTenGame from './components/challenge/apple-ten/AppleTenGame';
 import AppleTenRanking from './components/challenge/apple-ten/AppleTenRank';
 import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
 import VersionChecker from './VersionChecker';
+import AppleTenGamePC from './components/challenge/apple-ten/AppleTenGamePC';
 
 export default function App() {
   return (
@@ -142,9 +143,14 @@ function AppContent() {
             <OneToFiftyRanking />
           </RoleProtectedRoute>
         } />
-        <Route path="/challenge/apple-ten/AppleTenGame" element={
+        {/* <Route path="/challenge/apple-ten/AppleTenGame" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
             <AppleTenGame />
+          </RoleProtectedRoute>
+        } /> */}
+        <Route path="/challenge/apple-ten/AppleTenGamePC" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <AppleTenGamePC />
           </RoleProtectedRoute>
         } />
         <Route path="/challenge/apple-ten/rank" element={

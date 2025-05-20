@@ -56,8 +56,8 @@ export default function ChallengeHome() {
                         <strong className="text-danger"></strong>
                     </p>
                     <div className="card-actions">
-                        {/* <button className="btn btn-primary" onClick={() => handleGo("/challenge/apple-ten/AppleTenGame")}>게임 시작</button>
-                        <button className="btn btn-outline-dark" onClick={() => handleGo("/challenge/apple-ten/rank")}>랭킹 보기</button> */}
+                        <button className="btn btn-primary" onClick={() => handleGo("/challenge/apple-ten/AppleTenGameMobile")}>게임 시작</button>
+                        <button className="btn btn-outline-dark" onClick={() => handleGo("/challenge/apple-ten/rank")}>랭킹 보기</button>
                     </div>
                 </div>
                 <div className="challenge-card glass">

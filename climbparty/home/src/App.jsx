@@ -37,6 +37,7 @@ import AppleTenRanking from './components/challenge/apple-ten/AppleTenRank';
 import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
 import VersionChecker from './VersionChecker';
 import AppleTenGamePC from './components/challenge/apple-ten/AppleTenGamePC';
+import AppleTenGameMobile from './components/challenge/apple-ten/AppleTenGameMobile';
 
 export default function App() {
   return (
@@ -143,11 +144,11 @@ function AppContent() {
             <OneToFiftyRanking />
           </RoleProtectedRoute>
         } />
-        {/* <Route path="/challenge/apple-ten/AppleTenGame" element={
+        <Route path="/challenge/apple-ten/AppleTenGameMobile" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <AppleTenGame />
+            <AppleTenGameMobile />
           </RoleProtectedRoute>
-        } /> */}
+        } />
         <Route path="/challenge/apple-ten/AppleTenGamePC" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
             <AppleTenGamePC />

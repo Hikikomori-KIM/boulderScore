@@ -218,15 +218,20 @@ export default function AppleTenGame() {
     const total = selected.reduce((acc, { row, col }) => acc + grid[row][col], 0);
     if (total === 10) {
       successSoundRef.current?.play().catch(() => { });
-      const toDisappear = selected.map((cell) => ({ ...cell, direction: "fade" }));
-      setDisappearingCells(toDisappear);
+
+      // ✅ 사과를 바로 null 처리하고 점수 증가
+      const newGrid = grid.map((row) => [...row]);
+      selected.forEach(({ row, col }) => {
+        newGrid[row][col] = null;
+      });
+      setGrid(newGrid);
+      setScore((prev) => prev + selected.length);
+
+      // ✅ 시각적 효과용으로만 disappearingCells 설정
+      setDisappearingCells(selected.map((cell) => ({ ...cell })));
+
+      // ✅ 0.4초 뒤에 disappearingCells만 제거
       setTimeout(() => {
-        const newGrid = grid.map((row) => [...row]);
-        toDisappear.forEach(({ row, col }) => {
-          newGrid[row][col] = null;
-        });
-        setGrid(newGrid);
-        setScore((prev) => prev + toDisappear.length);
         setDisappearingCells([]);
       }, 400);
     }
@@ -278,7 +283,7 @@ export default function AppleTenGame() {
       </div>
     );
   }
-  
+
   return (
     <div
       className="apple-game-wrapper"

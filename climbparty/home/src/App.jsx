@@ -35,6 +35,7 @@ import ChallengeHome from './components/challenge/ChallengeHome';
 import AppleTenGame from './components/challenge/apple-ten/AppleTenGame';
 import AppleTenRanking from './components/challenge/apple-ten/AppleTenRank';
 import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
+import VersionChecker from './VersionChecker';
 
 export default function App() {
   return (
@@ -76,6 +77,7 @@ function AppContent() {
 
   return (
     <div className="pt-5 d-flex flex-column min-vh-100">
+      <VersionChecker /> {/* ✅ 여기 추가 */}
       <Menu />
 
       <Routes location={firstCheckDone ? location : frozenLocation}>

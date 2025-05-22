@@ -25,7 +25,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { arrayUnion, arrayRemove } from "firebase/firestore";
-import {  where } from "firebase/firestore";
+import { where } from "firebase/firestore";
 import { query, orderBy } from "firebase/firestore";
 
 // ✅ 회원가입
@@ -357,4 +357,135 @@ export async function saveOneToFiftyRecord(userId, name, time) {
     return false; // 기존 기록이 더 좋음
   }
 }
+//✅ 크루 생성
+export const createCrew = async (crewName, ownerId, ownerName) => {
+  const crewRef = doc(collection(db, "crews"));
+  await setDoc(crewRef, {
+    crewName,
+    ownerId,
+    ownerName,
+    createdAt: serverTimestamp(),
+    members: [ownerId],
+  });
+  return crewRef.id; // 생성된 크루 ID 반환
+};
+//✅ 내가 속한 크루 목록 조회
+export const loadMyCrews = async (userId) => {
+  const q = query(collection(db, "crews"), where("members", "array-contains", userId));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+//✅ 크루 초대(가입) 함수
+export const joinCrew = async (crewId, userId) => {
+  const crewRef = doc(db, "crews", crewId);
+  await updateDoc(crewRef, {
+    members: arrayUnion(userId),
+  });
+};
+//✅ 크루 상세 정보 불러오기
+export const getCrewDetail = async (crewId) => {
+  const docRef = doc(db, "crews", crewId);
+  const snapshot = await getDoc(docRef);
+  if (snapshot.exists()) {
+    return { id: snapshot.id, ...snapshot.data() };
+  } else {
+    return null;
+  }
+};
+//❌ 크루 나가기
+export const leaveCrew = async (crewId, userId) => {
+  const crewRef = doc(db, "crews", crewId);
+  await updateDoc(crewRef, {
+    members: arrayRemove(userId),
+  });
+};
+//🗑️ 크루 삭제 (ownerId 확인 후 삭제)
+export const deleteCrew = async (crewId, currentUserId) => {
+  const crewRef = doc(db, "crews", crewId);
+  const crewSnap = await getDoc(crewRef);
+  if (!crewSnap.exists()) return false;
 
+  const crewData = crewSnap.data();
+  if (crewData.ownerId !== currentUserId) {
+    throw new Error("크루 삭제 권한이 없습니다.");
+  }
+
+  await deleteDoc(crewRef);
+  return true;
+};
+//👥 크루 멤버 정보 조회 (users 컬렉션 참조)
+export const getCrewMembers = async (memberIds) => {
+  const usersRef = collection(db, "users");
+  const results = [];
+
+  // Firestore는 in 쿼리에 최대 10개까지만 허용
+  const chunks = [];
+  for (let i = 0; i < memberIds.length; i += 10) {
+    chunks.push(memberIds.slice(i, i + 10));
+  }
+
+  for (const chunk of chunks) {
+    const q = query(usersRef, where("uid", "in", chunk));
+    const snapshot = await getDocs(q);
+    snapshot.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
+  }
+
+  return results;
+};
+//🆕 방 생성
+export const createRoom = async (crewId, roomName, creatorId, creatorName) => {
+  const roomRef = doc(collection(db, "crews", crewId, "rooms"));
+  await setDoc(roomRef, {
+    roomName,
+    creatorId,
+    creatorName,
+    createdAt: serverTimestamp(),
+    isOpen: true, // 공개 여부
+    participants: [creatorId],
+  });
+  return roomRef.id;
+};
+//📋 특정 크루의 방 목록 불러오기
+export const loadRoomsByCrew = async (crewId) => {
+  const q = query(collection(db, "crews", crewId, "rooms"), orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+//👀 방 상세 정보 불러오기
+export const getRoomDetail = async (crewId, roomId) => {
+  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
+  const snapshot = await getDoc(roomRef);
+  if (snapshot.exists()) {
+    return { id: snapshot.id, ...snapshot.data() };
+  } else {
+    return null;
+  }
+};
+//🙋 방 입장 (참가자 추가)
+export const joinRoom = async (crewId, roomId, userId) => {
+  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
+  await updateDoc(roomRef, {
+    participants: arrayUnion(userId),
+  });
+};
+//🚪 방 나가기
+export const leaveRoom = async (crewId, roomId, userId) => {
+  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
+  await updateDoc(roomRef, {
+    participants: arrayRemove(userId),
+  });
+};
+//❌ 방 삭제 (생성자만 삭제 가능)
+export const deleteRoom = async (crewId, roomId, currentUserId) => {
+  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
+  const snapshot = await getDoc(roomRef);
+  if (!snapshot.exists()) return false;
+
+  const data = snapshot.data();
+  if (data.creatorId !== currentUserId) {
+    throw new Error("방 삭제 권한이 없습니다.");
+  }
+
+  await deleteDoc(roomRef);
+  return true;
+};

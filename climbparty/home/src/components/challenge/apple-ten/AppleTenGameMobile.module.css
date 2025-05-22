@@ -1,0 +1,273 @@
+/* 전체 게임 래퍼 (전체화면 진입 전) */
+.appleGameWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: #e9fbe9;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* 전체화면 최상단 래퍼 */
+.fullScreenWrapper {
+  position: fixed;
+  inset: 0;
+  background-color: #e9fbe9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* ✅ 중앙 정렬 */
+  align-items: center;
+  z-index: 9999;
+  overflow: hidden;
+  padding: 16px;
+  /* ✅ 추가 */
+  
+}
+
+/* ✅ 사과판 영역 */
+.gridContainer {
+  flex-grow: 1;
+  aspect-ratio: 17 / 10;
+  background-color: #e0fbdc;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 8px;
+  max-height: 100%;
+  max-width: 100%;
+  position: relative;
+  /* ✅ 이 줄 추가 */
+  
+}
+
+/* 사과판 전체 */
+.appleBoard {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: repeat(17, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: 1px;
+}
+
+
+/* 셀 (정사각형) */
+.appleCell {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background-color: transparent;
+  aspect-ratio: auto;
+  /* 삭제 or 무시됨 */
+  touch-action: none;
+}
+
+/* null 값 셀 */
+.empty {
+  background-color: transparent;
+}
+
+/* 사과 이미지 */
+.appleImg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 숫자 */
+.appleNumber {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 2px black;
+  font-size: 14px;
+  z-index: 2;
+  /* ✅ 숫자가 이미지 위에 보이도록 */
+  pointer-events: none;
+}
+
+
+/* 선택된 셀 */
+.selected {
+  background-color: #d2ffd2;
+  transform: scale(1.05);
+  transition: transform 0.1s ease;
+  z-index: 1;
+}
+
+/* 사라지는 애니메이션 */
+.disappear {
+  animation: fadeOut 0.4s ease-out forwards;
+  z-index: 10;
+}
+
+/* 드래그 영역 박스 */
+.selectionRectangle {
+  position: absolute;
+  border: 2px dashed #3b82f6;
+  background-color: rgba(59, 130, 246, 0.15);
+  pointer-events: none;
+  z-index: 999;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* 시간 바 (세로 유지) */
+.timeBarContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 30px;
+  height: 100%;
+  margin-left: 8px;
+}
+
+.timeBar {
+  width: 100%;
+  background-color: #048d31;
+  transition: height 1s linear;
+}
+
+.timeText {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 6px;
+  /* 아래 여백 */
+  text-align: center;
+}
+
+/* 버튼 영역 */
+.footerControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  /* ✅ 버튼 사이 여백 줄임 */
+  margin-top: 4px;
+  /* ✅ 위쪽 간격 최소화 */
+  padding: 0;
+  /* ✅ 아래쪽 여백 제거 */
+  height: auto;
+}
+
+/* 버튼 스타일 */
+.btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  /* ✅ 여유 있게 */
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  /* ✅ 위에 h2랑 떨어지게 */
+}
+
+/* 게임 오버 오버레이 */
+.gameOverOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99;
+}
+
+/* 게임 오버 모달 */
+.gameOverContent {
+  background: #fff;
+  padding: 32px 48px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s ease;
+}
+
+.gameOverContent h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #d9534f;
+}
+
+.gameOverContent p {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* .footerControls {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+} */
+.gameMainRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* 🔥 화면 크기에 따라 동적 비율 계산 */
+  width: 100vw;
+  height: 100vh;
+  max-height: 100dvh;
+  max-width: 100dvw;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.footerControls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.scoreText {
+  font-weight: bold;
+  font-size: 16px;
+  color: #2f7a2f;
+  margin-right: 12px;
+  line-height: 1;
+  /* ✅ 텍스트 정렬 보정 */
+  display: flex;
+  align-items: center;
+}

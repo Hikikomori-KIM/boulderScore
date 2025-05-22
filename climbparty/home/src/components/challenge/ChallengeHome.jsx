@@ -46,7 +46,7 @@ export default function ChallengeHome() {
 
                 <div className="challenge-card glass">
                     <div className="card-header">
-                        <h3>사과 10 퍼즐 mobile버전 공사중
+                        <h3>사과 10 퍼즐 mobile버전
                         
                         </h3>
                         <span className="badge">🍎 계산 퍼즐</span>
@@ -56,8 +56,8 @@ export default function ChallengeHome() {
                         <strong className="text-danger"></strong>
                     </p>
                     <div className="card-actions">
-                        {/* <button className="btn btn-primary" onClick={() => handleGo("/challenge/apple-ten/AppleTenGame")}>게임 시작</button>
-                        <button className="btn btn-outline-dark" onClick={() => handleGo("/challenge/apple-ten/rank")}>랭킹 보기</button> */}
+                        <button className="btn btn-primary" onClick={() => handleGo("/challenge/apple-ten/AppleTenGameMobile")}>게임 시작</button>
+                        <button className="btn btn-outline-dark" onClick={() => handleGo("/challenge/apple-ten/rank")}>랭킹 보기</button>
                     </div>
                 </div>
                 <div className="challenge-card glass">

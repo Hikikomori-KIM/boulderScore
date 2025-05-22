@@ -37,6 +37,13 @@ import AppleTenRanking from './components/challenge/apple-ten/AppleTenRank';
 import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
 import VersionChecker from './VersionChecker';
 import AppleTenGamePC from './components/challenge/apple-ten/AppleTenGamePC';
+import AppleTenGameMobile from './components/challenge/apple-ten/AppleTenGameMobile';
+import CrewList from './components/crew/CrewList';
+import CrewCreate from './components/crew/CrewCreate';
+import CrewDetail from './components/crew/CrewDetail';
+import RoomCreate from './components/crew/RoomCreate';
+import CrewInvite from './components/crew/CrewInvite';
+import RoomDetail from './components/crew/RoomDetail';
 
 export default function App() {
   return (
@@ -143,11 +150,11 @@ function AppContent() {
             <OneToFiftyRanking />
           </RoleProtectedRoute>
         } />
-        {/* <Route path="/challenge/apple-ten/AppleTenGame" element={
+        <Route path="/challenge/apple-ten/AppleTenGameMobile" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <AppleTenGame />
+            <AppleTenGameMobile />
           </RoleProtectedRoute>
-        } /> */}
+        } />
         <Route path="/challenge/apple-ten/AppleTenGamePC" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
             <AppleTenGamePC />
@@ -158,7 +165,37 @@ function AppContent() {
             <AppleTenRank />
           </RoleProtectedRoute>
         } />
-
+        {/* ✅ 크루/방 페이지 (일반 유저 이상 접근 가능) */}
+        <Route path="/crew" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <CrewList />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/crew/create" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <CrewCreate />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/crew/:crewId" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <CrewDetail />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/crew/:crewId/room/create" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <RoomCreate />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/crew/invite/:crewId" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <CrewInvite />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/crew/:crewId/room/:roomId" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <RoomDetail />
+          </RoleProtectedRoute>
+        } />
         {/* ✅ 어드민 전용 보호라우트*/}
         <Route path="/ScorerSheet" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
@@ -190,6 +227,8 @@ function AppContent() {
             <AdminPartyTape />
           </RoleProtectedRoute>
         } />
+        {/* ✅ 슈퍼 어드민 전용 보호라우트*/}
+
       </Routes>
 
       <Footer />

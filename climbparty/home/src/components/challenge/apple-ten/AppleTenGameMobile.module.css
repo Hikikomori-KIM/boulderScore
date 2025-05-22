@@ -25,6 +25,7 @@
   overflow: hidden;
   padding: 16px;
   /* ✅ 추가 */
+  
 }
 
 /* ✅ 사과판 영역 */
@@ -40,7 +41,9 @@
   padding: 8px;
   max-height: 100%;
   max-width: 100%;
-  position: relative; /* ✅ 이 줄 추가 */
+  position: relative;
+  /* ✅ 이 줄 추가 */
+  
 }
 
 /* 사과판 전체 */
@@ -86,14 +89,15 @@
 /* 숫자 */
 .appleNumber {
   position: absolute;
-  top: 50%;
+  top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-weight: bold;
   color: white;
   text-shadow: 0 0 2px black;
   font-size: 14px;
-  z-index: 2; /* ✅ 숫자가 이미지 위에 보이도록 */
+  z-index: 2;
+  /* ✅ 숫자가 이미지 위에 보이도록 */
   pointer-events: none;
 }
 
@@ -153,7 +157,8 @@
 .timeText {
   font-size: 14px;
   color: #333;
-  margin-bottom: 6px;  /* 아래 여백 */
+  margin-bottom: 6px;
+  /* 아래 여백 */
   text-align: center;
 }
 
@@ -162,9 +167,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;              /* ✅ 버튼 사이 여백 줄임 */
-  margin-top: 4px;       /* ✅ 위쪽 간격 최소화 */
-  padding: 0;            /* ✅ 아래쪽 여백 제거 */
+  gap: 8px;
+  /* ✅ 버튼 사이 여백 줄임 */
+  margin-top: 4px;
+  /* ✅ 위쪽 간격 최소화 */
+  padding: 0;
+  /* ✅ 아래쪽 여백 제거 */
   height: auto;
 }
 
@@ -252,12 +260,14 @@
   gap: 12px;
   margin-bottom: 10px;
 }
+
 .scoreText {
   font-weight: bold;
   font-size: 16px;
   color: #2f7a2f;
   margin-right: 12px;
-  line-height: 1;         /* ✅ 텍스트 정렬 보정 */
+  line-height: 1;
+  /* ✅ 텍스트 정렬 보정 */
   display: flex;
   align-items: center;
 }

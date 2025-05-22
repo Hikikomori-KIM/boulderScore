@@ -235,6 +235,10 @@ export default function AppleTenGameMobile() {
       if (screen.orientation?.lock) {
         screen.orientation.lock("landscape").catch(() => { });
       }
+      // ✅ 추가된 부분: 주소창 자동 숨김 유도
+      setTimeout(() => {
+        window.scrollTo(0, 1);
+      }, 500);
     }, 50);
   };
 
@@ -243,7 +247,7 @@ export default function AppleTenGameMobile() {
     setStarted(false);
     setGrid([]);
     setScore(0);
-    setTimeLeft(4);
+    setTimeLeft(120);
     setSelected([]);
     setDisappearingCells([]);
     setIsSubmitted(false);
@@ -257,16 +261,30 @@ export default function AppleTenGameMobile() {
   };
 
   const handleExitToHome = async () => {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+    } catch (e) {
+      console.warn("전체화면 해제 실패", e);
     }
-    if (screen.orientation?.unlock) {
-      screen.orientation.unlock();
+
+    try {
+      if (screen.orientation?.unlock) {
+        screen.orientation.unlock();
+      }
+    } catch (e) {
+      console.warn("화면 방향 잠금 해제 실패", e);
     }
+
+    // 세로 안내 메시지
+    alert("홈으로 이동합니다. 화면이 세로가 아닐 경우, 직접 회전해주세요 📱");
+
     setTimeout(() => {
       navigate("/challenge");
     }, 300);
   };
+
 
   const toggleBgm = () => setBgmOn((prev) => !prev);
   const isSelected = (row, col) => selected.some((c) => c.row === row && c.col === col);
@@ -304,7 +322,10 @@ export default function AppleTenGameMobile() {
           <button className={styles.btn} onClick={toggleBgm}>
             {bgmOn ? "🔈 BGM 끄기" : "🔇 BGM 켜기"}
           </button>
-          <button className={styles.btn} onClick={() => navigate("/challenge")}>🏠 홈으로</button>
+          <button className={styles.btn} onClick={handleExitToHome}>
+            🏠 홈으로
+          </button>
+
         </div>
       )}
       <div className={styles.gameMainRow}>

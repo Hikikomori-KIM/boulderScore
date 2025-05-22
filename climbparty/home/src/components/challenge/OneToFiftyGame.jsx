@@ -15,10 +15,48 @@ export default function OneToFiftyGame() {
   const [recordSaved, setRecordSaved] = useState(false);
   const [visibleCountdown, setVisibleCountdown] = useState(null);
   const [countingDown, setCountingDown] = useState(false);
+  const hasShownMouseIdleWarning = useRef(false); // ⬅️ 중복 alert 방지용
+  const [lastMouseMoveTime, setLastMouseMoveTime] = useState(Date.now());
+  const isTouchDevice = useRef(false);
 
   // ✅ Web Audio API 관련 Ref
   const audioCtxRef = useRef(null);
   const bufferRef = useRef(null);
+
+  useEffect(() => {
+    // 모바일 디바이스 감지
+    isTouchDevice.current = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+    // PC인 경우에만 마우스 감지
+    if (!isTouchDevice.current) {
+      const handleMove = () => {
+        setLastMouseMoveTime(Date.now());
+        hasShownMouseIdleWarning.current = false; // ⬅️ 마우스 움직이면 경고 초기화
+      };
+      window.addEventListener("mousemove", handleMove);
+
+      return () => window.removeEventListener("mousemove", handleMove);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isTouchDevice.current) {
+      const interval = setInterval(() => {
+        if (!started) return; // 게임이 시작되지 않았으면 검사 안 함
+
+        const now = Date.now();
+        const idleTime = now - lastMouseMoveTime;
+
+        if (idleTime > 3000 && !hasShownMouseIdleWarning.current) {
+          alert("마우스를 3초 이상 움직이지 않았습니다. 자동화 사용이 의심됩니다.");
+          hasShownMouseIdleWarning.current = true;
+        }
+      }, 500); // 0.5초마다 검사
+
+      return () => clearInterval(interval);
+    }
+  }, [started, lastMouseMoveTime]);
+
 
   // ✅ 오디오 초기화 (mp3 버퍼 로드)
   useEffect(() => {
@@ -85,6 +123,7 @@ export default function OneToFiftyGame() {
     setIsSubmitted(false);
     setRecordSaved(false);
 
+    setLastMouseMoveTime(Date.now()); // ✅ 이 줄 추가!
     document.body.style.overflow = "auto";
   };
 
@@ -115,6 +154,18 @@ export default function OneToFiftyGame() {
 
   const handleClick = (idx) => {
     if (countingDown || !started) return; // 카운트다운 중엔 클릭 금지
+
+    if (!isTouchDevice.current) {
+      const now = Date.now();
+      const idleDuration = now - lastMouseMoveTime;
+
+      if (idleDuration > 3000) {
+        alert("마우스를 마지막으로 움직인 지 3초 이상 지났습니다. 마우스를 움직여주세요!");
+        return;
+      }
+    }
+
+
     if (grid[idx].top !== currentNumber) return;
 
     playClickSound();

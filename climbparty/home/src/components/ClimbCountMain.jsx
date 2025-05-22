@@ -2,109 +2,115 @@ import { ShieldCheck, AlertCircle, ActivitySquare, Footprints, Zap } from "lucid
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useAuth } from "../components/AuthContext";
 
-
 export default function ClimbCountMain() {
   const { user } = useAuth();
 
   return (
-    <div>
+    <div className="bg-white">
       {/* Hero Section */}
       <div className="text-center bg-light p-5 border-bottom">
-        <h1 className="fw-bold display-5 mb-3" style={{ wordBreak: "keep-all" }}>
-          🧗‍♀️ Bouldering Party<br className="d-sm-none" />
-          <span className="text-primary">함께 즐기는 클라이밍 축제</span>
+        <h1 className="fw-bold display-4 mb-3" style={{ wordBreak: "keep-all", color: "#2c3e50" }}>
+          🧗‍♀️ BolPa
         </h1>
+        <h2 className="fs-5 text-muted mb-4">
+          함께하는 클라이밍의 즐거움, BolPa에서 시작해요
+        </h2>
 
-        <p className="fs-5 text-muted mb-4">
-          친구들과 함께, 점수로 즐기는 실시간 클라이밍 랭킹!
-        </p>
-
-        <div className="d-flex flex-column align-items-center" style={{ maxWidth: "300px", margin: "0 auto" }}>
+        <div className="d-flex flex-column align-items-center" style={{ maxWidth: "320px", margin: "0 auto" }}>
           {user ? (
-            <a href="/board/list" className="btn btn-outline-primary btn-lg mb-3 w-100 shadow-sm rounded-pill">
-              📝 게시판으로 이동하기
+            <a href="/board/list" className="btn btn-primary btn-lg mb-3 w-100 shadow rounded-pill">
+              📝 게시판으로 이동
             </a>
           ) : (
-            <a href="/join" className="btn btn-outline-success btn-lg mb-3 w-100 shadow-sm rounded-pill">
-              🙋 지금 참가하기
+            <a href="/join" className="btn btn-success btn-lg mb-3 w-100 shadow rounded-pill">
+              🙋 지금 바로 참가하기
             </a>
           )}
-          {user && <>
-            <a href="/challenge" className="btn btn-outline-dark btn-lg mb-3 w-100 shadow-sm rounded-pill">
-              🎮 미니게임
-            </a>
-            <a href="/teamCount" className="btn btn-outline-info btn-lg mb-3 w-100 shadow-sm rounded-pill">
-              📊 조별 점수 보기
-            </a>
-          </>}
+          {user && (
+            <>
+              <a href="/challenge" className="btn btn-outline-dark btn-lg mb-3 w-100 shadow rounded-pill">
+                🎮 미니게임 즐기기
+              </a>
+              <a href="/teamCount" className="btn btn-outline-info btn-lg mb-3 w-100 shadow rounded-pill">
+                📊 팀별 점수 보기
+              </a>
+            </>
+          )}
         </div>
       </div>
 
       {/* 소개 섹션 */}
       <div className="container mt-5">
-        <h2 className="text-center mb-3">🎯 Bouldering Party란?</h2>
+        <h2 className="text-center mb-3">🎉 BolPa란?</h2>
         <p className="text-center text-muted">
-          Bouldering Party는 누구나 참여할 수 있는 친목 클라이밍 이벤트입니다.<br />
-          실시간 랭킹, 팀별 점수 시스템을 통해 재미있게 즐겨보세요!
+          BolPa는 친구들과 함께 즐기는 <strong>볼더링 점수 공유 플랫폼</strong>이에요.<br />
+          클라이밍장에서 각자 클리어한 테이프를 기록하고,<br />
+          누가 얼마나 풀었는지, 어떤 테이프가 인기 많은지 <strong>실시간으로 확인</strong>할 수 있어요.
+        </p>
+        <p className="text-center text-muted">
+          대회를 위한 <strong>공식 점수판</strong>은 물론,<br />
+          동호회나 친구들끼리 <strong>자율적으로 점수를 기록하며</strong><br />
+          가볍게 경쟁하고 추억을 남기는 데에도 적합해요.
         </p>
       </div>
 
-      {/* 안전사항 섹션 */}
+      {/* 사용 방법 섹션 */}
       <div className="container mt-5 mb-5">
-        <h2 className="text-center mb-4">
-          <ShieldCheck size={32} className="me-2 text-primary" />
-          안전사항 및 유의사항
-        </h2>
-        <ul className="list-group">
-          <li className="list-group-item d-flex align-items-center">
-            <AlertCircle className="me-3 text-danger" />
-            매트 위에서 뛰거나 장난치지 마세요.
-          </li>
-          <li className="list-group-item d-flex align-items-center">
-            <Footprints className="me-3 text-secondary" />
-            등반 전 주변 사람과의 간격을 확인하세요.
-          </li>
-          <li className="list-group-item d-flex align-items-center">
-            <Zap className="me-3 text-warning" />
-            음주 후 클라이밍은 절대 금지입니다.
-          </li>
-          <li className="list-group-item d-flex align-items-center">
-            <ActivitySquare className="me-3 text-info" />
-            낙하 시 주변 사람과 충돌하지 않도록 주의하세요.
-          </li>
-          <li className="list-group-item d-flex align-items-center">
-            <ShieldCheck className="me-3 text-success" />
-            부상 방지를 위해 충분한 준비운동을 해주세요.
-          </li>
-          <li className="list-group-item d-flex align-items-center">
-            <ShieldCheck className="me-3 text-muted" />
-            다치면 상품은 지급 안됩니다 😢 꼭 안전하게 즐겨주세요!
-          </li>
-        </ul>
+        <h2 className="text-center mb-4">📌 어떻게 이용하나요?</h2>
+
+        <p className="text-center text-muted mb-4">
+          BolPa는 <strong>2가지 방식</strong>으로 즐길 수 있어요.
+        </p>
+
+        <div className="row g-4">
+          {/* 자율형 */}
+          <div className="col-md-6">
+            <div className="card h-100 shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title fw-bold">🙋 자율형 파티</h5>
+                <ul className="list-group list-group-flush">
+                  <li className="list-group-item">1. 로그인 후 원하는 파티에 참가해요.</li>
+                  <li className="list-group-item">2. 클라이밍 후 직접 채점지를 작성해요.</li>
+                  <li className="list-group-item">3. 나의 점수와 랭킹을 실시간 확인할 수 있어요.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* 운영형 */}
+          <div className="col-md-6">
+            <div className="card h-100 shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title fw-bold">🎯 대회/운영형 파티</h5>
+                <ul className="list-group list-group-flush">
+                  <li className="list-group-item">1. 사전에 참가 신청하고 현장에 방문해요.</li>
+                  <li className="list-group-item">2. 채점자가 클리어 여부를 기록해요.</li>
+                  <li className="list-group-item">3. 조별/개인별 점수가 자동 반영돼요.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 제작자 정보 섹션 */}
-      <div className="card text-center border-0 mt-5">
+
+      {/* 제작자 정보 */}
+      <div className="card text-center border-0 mt-5 mb-5">
         <div className="card-body">
           <h5 className="card-title fw-bold mb-3">👨‍💻 제작자 정보</h5>
+          <p className="card-text">만든이: <strong>김성범</strong></p>
 
-          <p className="card-text">
-            만든이: <strong>김성범</strong>
-          </p>
-
-          <p className="card-text d-flex justify-content-center align-items-center gap-2">
-            <i className="bi bi-instagram" style={{ color: "#E4405F", fontSize: "1.2rem" }}></i>
-            <a href="https://www.instagram.com/climbxxg/" target="_blank" rel="noreferrer" className="text-decoration-none">
+          <div className="d-flex justify-content-center align-items-center gap-3">
+            <a href="https://www.instagram.com/climbxxg/" target="_blank" rel="noreferrer" className="text-decoration-none d-flex align-items-center gap-1">
+              <i className="bi bi-instagram" style={{ color: "#E4405F", fontSize: "1.2rem" }}></i>
               @climbxxg
             </a>
-          </p>
 
-          <p className="card-text d-flex justify-content-center align-items-center gap-2">
-            <i className="bi bi-envelope-fill" style={{ color: "#0d6efd", fontSize: "1.2rem" }}></i>
-            <a href="mailto:gsb1028@naver.com" className="text-decoration-none">
+            <a href="mailto:gsb1028@naver.com" className="text-decoration-none d-flex align-items-center gap-1">
+              <i className="bi bi-envelope-fill" style={{ color: "#0d6efd", fontSize: "1.2rem" }}></i>
               gsb1028@naver.com
             </a>
-          </p>
+          </div>
         </div>
       </div>
     </div>

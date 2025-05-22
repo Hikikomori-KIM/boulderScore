@@ -46,7 +46,7 @@ export default function ChallengeHome() {
 
                 <div className="challenge-card glass">
                     <div className="card-header">
-                        <h3>사과 10 퍼즐 mobile버전 공사중
+                        <h3>사과 10 퍼즐 mobile버전
                         
                         </h3>
                         <span className="badge">🍎 계산 퍼즐</span>

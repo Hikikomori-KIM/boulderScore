@@ -33,7 +33,7 @@ export default function Menu() {
         <div className="container-fluid d-flex justify-content-between align-items-center px-3">
           <Link to="/" className="d-flex align-items-center text-decoration-none text-dark gap-2">
             <img src={holdImage} height="35" alt="logo" style={{ verticalAlign: "middle" }} />
-            <strong className="fs-5 mb-0">볼더링파티 점수판</strong>
+            <strong className="fs-5 mb-0">BolPa 볼더링 점수판</strong>
           </Link>
 
           <div className="d-none d-lg-flex align-items-center gap-2 flex-nowrap fw-semibold">
@@ -108,6 +108,25 @@ export default function Menu() {
                 )}
               </div>
             )}
+            {isSuperAdmin && (
+              <div className="dropdown ms-2">
+                <button className="btn btn-outline-danger btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                  🧿 슈퍼어드민
+                </button>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a
+                      href="/crew"
+                      className="dropdown-item"
+                      onClick={(e) => handleProtectedClick(e, "/crew")}
+                    >
+                      ⚙️ 크루/방 관리
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            )}
+
 
             {user ? (
               <>

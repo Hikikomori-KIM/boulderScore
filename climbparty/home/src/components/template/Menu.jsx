@@ -116,11 +116,11 @@ export default function Menu() {
                 <ul className="dropdown-menu dropdown-menu-end">
                   <li>
                     <a
-                      href="/crew"
+                      href="/"
                       className="dropdown-item"
-                      onClick={(e) => handleProtectedClick(e, "/crew")}
+                      onClick={(e) => handleProtectedClick(e, "/")}
                     >
-                      ⚙️ 크루/방 관리
+                      ⚙️ 방관리
                     </a>
                   </li>
                 </ul>

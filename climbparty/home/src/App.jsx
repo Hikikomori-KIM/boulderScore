@@ -6,7 +6,6 @@ import Menu from './components/template/Menu';
 import Footer from './components/template/Footer';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
-import { ToastContainer } from "react-toastify";
 
 // 페이지들
 import TeamCount from './components/TeamCount';
@@ -28,7 +27,6 @@ import BoardNew from './components/board/boardNew';
 import OpenInBrowser from './components/template/OpenInBrowser';
 import BoardDetail from './components/board/boardDetail';
 import BoardEdit from './components/board/boardEdit';
-import "react-toastify/dist/ReactToastify.css";
 import OneToFiftyGame from './components/challenge/OneToFiftyGame';
 import OneToFiftyRanking from './components/challenge/OneToFiftyRanking';
 import ChallengeHome from './components/challenge/ChallengeHome';
@@ -38,12 +36,8 @@ import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
 import VersionChecker from './VersionChecker';
 import AppleTenGamePC from './components/challenge/apple-ten/AppleTenGamePC';
 import AppleTenGameMobile from './components/challenge/apple-ten/AppleTenGameMobile';
-import CrewList from './components/crew/CrewList';
-import CrewCreate from './components/crew/CrewCreate';
-import CrewDetail from './components/crew/CrewDetail';
-import RoomCreate from './components/crew/RoomCreate';
-import CrewInvite from './components/crew/CrewInvite';
-import RoomDetail from './components/crew/RoomDetail';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
@@ -165,37 +159,6 @@ function AppContent() {
             <AppleTenRank />
           </RoleProtectedRoute>
         } />
-        {/* ✅ 크루/방 페이지 (일반 유저 이상 접근 가능) */}
-        <Route path="/crew" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewList />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/create" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewCreate />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/:crewId" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewDetail />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/:crewId/room/create" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <RoomCreate />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/invite/:crewId" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewInvite />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/:crewId/room/:roomId" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <RoomDetail />
-          </RoleProtectedRoute>
-        } />
         {/* ✅ 어드민 전용 보호라우트*/}
         <Route path="/ScorerSheet" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
@@ -228,7 +191,6 @@ function AppContent() {
           </RoleProtectedRoute>
         } />
         {/* ✅ 슈퍼 어드민 전용 보호라우트*/}
-
       </Routes>
 
       <Footer />

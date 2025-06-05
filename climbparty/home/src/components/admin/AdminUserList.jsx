@@ -8,11 +8,17 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import "./AdminUserList.css"; // ✅ 추가된 스타일 import
 
 const ROLE_LABEL = {
   superadmin: "관리자",
   admin: "운영자",
   user: "일반회원",
+};
+const formatDate = (timestamp) => {
+  if (!timestamp?.seconds) return "-";
+  const date = new Date(timestamp.seconds * 1000);
+  return date.toISOString().slice(0, 10); // YYYY-MM-DD
 };
 
 export default function AdminUserList() {
@@ -84,18 +90,19 @@ export default function AdminUserList() {
     if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
     return 0;
   });
-  return (
-    <div className="container mt-4">
-      <h2 className="mb-3">회원 역할 관리</h2>
 
-      <div className="mb-3 d-flex gap-2 align-items-center flex-wrap">
+  return (
+    <div className="container py-4">
+      <h3 className="fw-bold mb-4">👥 회원 역할 관리</h3>
+
+      <div className="bg-light rounded shadow-sm p-3 mb-4 d-flex flex-wrap gap-2 align-items-center">
         <input
           type="text"
           className="form-control"
           placeholder="이름 또는 이메일 검색"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          style={{ maxWidth: "300px" }}
+          style={{ maxWidth: "280px" }}
         />
         <select
           className="form-select"
@@ -106,51 +113,63 @@ export default function AdminUserList() {
           <option value="name">이름순</option>
           <option value="email">이메일순</option>
           <option value="role">역할순</option>
-          <option value="createdAt">가입일순</option> {/* ✅ 추가 */}
+          <option value="createdAt">가입일순</option>
         </select>
         <button
           className="btn btn-outline-secondary btn-sm"
           onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          title="정렬 방향 전환"
         >
           {sortOrder === "asc" ? "▲" : "▼"}
         </button>
       </div>
 
-      <table className="table table-bordered">
-        <thead className="table-light">
-          <tr>
-            <th>이름</th>
-            <th>이메일</th>
-            <th>현재 역할</th>
-            <th>변경</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedUsers.map((user) => (
-            <tr key={user.id}>
-              <td>{user.displayName || user.name || "이름 없음"}</td>
-              <td>{user.email}</td>
-              <td>{ROLE_LABEL[user.role] || user.role}</td>
-              <td>
-                {user.role === "superadmin" ? (
-                  <span className="text-muted">변경 불가</span>
-                ) : currentUserRole === "superadmin" ? (
-                  <select
-                    className="form-select"
-                    value={user.role}
-                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                  >
-                    <option value="user">일반회원</option>
-                    <option value="admin">운영자</option>
-                  </select>
-                ) : (
-                  <span className="text-muted">권한 없음</span>
-                )}
-              </td>
+      <div className="table-responsive">
+        <table className="table table-hover align-middle table-bordered shadow-sm rounded">
+          <thead className="table-light">
+            <tr>
+              <th className="d-none d-md-table-cell">가입일</th>
+              <th>이름</th>
+              <th>이메일</th>
+              <th>현재 역할</th>
+              <th>변경</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {sortedUsers.map((user) => (
+              <tr key={user.id}>
+                <td className="d-none d-md-table-cell">
+                  {formatDate(user.createdAt)}
+                </td>
+                <td>{user.displayName || user.name || "이름 없음"}</td>
+                <td>{user.email}</td>
+                <td>
+                  <span className={`badge role-badge ${user.role}`}>
+                    {ROLE_LABEL[user.role]}
+                  </span>
+                </td>
+                <td>
+                  {user.role === "superadmin" ? (
+                    <span className="text-muted">변경 불가</span>
+                  ) : currentUserRole === "superadmin" ? (
+                    <select
+                      className="form-select form-select-sm"
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                    >
+                      <option value="user">일반회원</option>
+                      <option value="admin">운영자</option>
+                    </select>
+                  ) : (
+                    <span className="text-muted">권한 없음</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+      </div>
     </div>
   );
 }

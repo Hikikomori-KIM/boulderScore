@@ -1,0 +1,21 @@
+.role-badge {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+
+.role-badge.user {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+}
+
+.role-badge.admin {
+  background-color: #ffe0b2;
+  color: #ef6c00;
+}
+
+.role-badge.superadmin {
+  background-color: #f8d7da;
+  color: #c82333;
+}

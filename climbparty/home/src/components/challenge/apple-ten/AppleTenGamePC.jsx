@@ -5,9 +5,30 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import styles from "./AppleTenGamePC.module.css";
 
 function getRandomApple() {
+  const probabilities = [
+    { num: 1, prob: 0.125 },
+    { num: 2, prob: 0.125 },
+    { num: 3, prob: 0.125 },
+    { num: 4, prob: 0.1083 },
+    { num: 5, prob: 0.1083 },
+    { num: 6, prob: 0.1083 },
+    { num: 7, prob: 0.1083 },
+    { num: 8, prob: 0.1083 },
+    { num: 9, prob: 0.1083 },
+  ];
+
   const rand = Math.random();
-  return Math.floor(rand * 9) + 1;
+  let sum = 0;
+
+  for (const { num, prob } of probabilities) {
+    sum += prob;
+    if (rand < sum) return num;
+  }
+
+  return 9; // fallback
 }
+
+
 
 function generateAppleGrid(rows = 10, cols = 17) {
   return Array.from({ length: rows }, () =>
@@ -35,6 +56,11 @@ export default function AppleTenGamePC() {
   const wrapperRef = useRef(null);
   const bgmRef = useRef(null);
   const successSoundRef = useRef(null);
+
+  const playSuccessSound = () => {
+    const audio = new Audio("/sounds/success.wav");
+    audio.play().catch(() => { });
+  };
 
   useEffect(() => {
     const resize = () => {
@@ -204,7 +230,7 @@ export default function AppleTenGamePC() {
 
     const total = uniqueSelected.reduce((acc, { row, col }) => acc + grid[row][col], 0);
     if (total === 10) {
-      successSoundRef.current?.play().catch(() => {});
+      playSuccessSound();
       const newGrid = grid.map((row) => [...row]);
       uniqueSelected.forEach(({ row, col }) => (newGrid[row][col] = null));
       setGrid(newGrid);
@@ -248,14 +274,14 @@ export default function AppleTenGamePC() {
     disappearingCells.find((c) => c.row === row && c.col === col) ? styles.disappear : "";
   const progressPercent = (timeLeft / 120) * 100;
 
-  if (isMobile) {
-    return (
-      <div className={styles.appleMobileBlock}>
-        <h2>⚠️ Apple 10 게임은 현재 PC에서만 플레이할 수 있어요.</h2>
-        <p>더 넓은 화면에서 드래그가 원활하게 작동하도록 PC 버전만 지원됩니다.</p>
-      </div>
-    );
-  }
+  // if (isMobile) {
+  //   return (
+  //     <div className={styles.appleMobileBlock}>
+  //       <h2>⚠️ Apple 10 게임은 현재 PC에서만 플레이할 수 있어요.</h2>
+  //       <p>더 넓은 화면에서 드래그가 원활하게 작동하도록 PC 버전만 지원됩니다.</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div
@@ -373,4 +399,5 @@ export default function AppleTenGamePC() {
       <audio ref={successSoundRef} src="/sounds/success.wav" />
     </div>
   );
+
 }

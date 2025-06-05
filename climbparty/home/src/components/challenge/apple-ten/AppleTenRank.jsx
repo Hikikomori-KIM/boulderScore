@@ -12,6 +12,10 @@ export default function AppleTenRank() {
     { rank: 1, item: "그랩댓 홀드 솔", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747039876/%EA%B7%B8%EB%9E%A9%EB%8C%93_vnrrao.png" },
     { rank: 2, item: "5000 보조배터리", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747038395/2%EB%B2%88%EC%A7%B8_%EA%B2%8C%EC%9E%84_%EC%83%81%ED%92%88_dmhvyj.png" },
     { rank: 3, item: "5000 보조배터리", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747038395/2%EB%B2%88%EC%A7%B8_%EA%B2%8C%EC%9E%84_%EC%83%81%ED%92%88_dmhvyj.png" },
+    { rank: 4, item: "스포츠 키링", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747977863/%ED%99%94%EB%A9%B4_%EC%BA%A1%EC%B2%98_2025-05-23_142411_vei0zq.png" },
+    { rank: 5, item: "스포츠 키링", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747977817/da4483918ad31b4c14807a071c8b5c9b_fxowqm.jpg" },
+    { rank: 6, item: "스포츠 키링", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747977809/2fca22958c420d46efc13a4427850f2c_vdfnvt.jpg" },
+
 
   ];
 
@@ -68,7 +72,13 @@ export default function AppleTenRank() {
         {prizes.map((prize) => (
           <div className="prize-card" key={prize.rank}>
             <div className="prize-rank">
-              {prize.rank === 1 ? "🥇 1등" : prize.rank === 2 ? "🥈 2등" : "🥉 3등"}
+              {prize.rank === 1
+                ? "🥇 1등"
+                : prize.rank === 2
+                  ? "🥈 2등"
+                  : prize.rank === 3
+                    ? "🥉 3등"
+                    : `${prize.rank}등`}
             </div>
             <img src={prize.image} alt={prize.item} className="prize-img" />
             <div className="prize-item">{prize.item}</div>

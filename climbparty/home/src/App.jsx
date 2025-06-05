@@ -44,6 +44,7 @@ import CrewDetail from './components/crew/CrewDetail';
 import RoomCreate from './components/crew/RoomCreate';
 import CrewInvite from './components/crew/CrewInvite';
 import RoomDetail from './components/crew/RoomDetail';
+import AdminAnnouncementPage from './components/admin/announcement';
 
 export default function App() {
   return (
@@ -202,6 +203,12 @@ function AppContent() {
             <ScorerSheet />
           </RoleProtectedRoute>
         } />
+        <Route path="/admin/announcement" element={
+          <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
+            <AdminAnnouncementPage />
+          </RoleProtectedRoute>
+        } />
+
         <Route path="/admin/userlist" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
             <AdminUserList />

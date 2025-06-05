@@ -1,4 +1,3 @@
-// AppleTenGameMobile.jsx (수정된 최종 버전)
 import React, { useEffect, useRef, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { db } from "../../../firebase";
@@ -7,7 +6,27 @@ import styles from "./AppleTenGameMobile.module.css";
 import { useNavigate } from "react-router-dom";
 
 function getRandomApple() {
-  return Math.floor(Math.random() * 9) + 1;
+  const probabilities = [
+    { num: 1, prob: 0.125 },
+    { num: 2, prob: 0.125 },
+    { num: 3, prob: 0.125 },
+    { num: 4, prob: 0.1083 },
+    { num: 5, prob: 0.1083 },
+    { num: 6, prob: 0.1083 },
+    { num: 7, prob: 0.1083 },
+    { num: 8, prob: 0.1083 },
+    { num: 9, prob: 0.1083 },
+  ];
+
+  const rand = Math.random();
+  let sum = 0;
+
+  for (const { num, prob } of probabilities) {
+    sum += prob;
+    if (rand < sum) return num;
+  }
+
+  return 9; // fallback
 }
 
 function generateAppleGrid(rows = 10, cols = 17) {
@@ -31,26 +50,15 @@ export default function AppleTenGameMobile() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [recordSaved, setRecordSaved] = useState(false);
   const [fullScreen, setFullScreen] = useState(false);
-  const [orientationOk, setOrientationOk] = useState(false);
 
   const containerRef = useRef(null);
   const bgmRef = useRef(null);
   const successSoundRef = useRef(null);
 
-  useEffect(() => {
-    const checkOrientation = () => {
-      const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-      setOrientationOk(isLandscape);
-    };
-
-    checkOrientation();
-    window.addEventListener("orientationchange", checkOrientation);
-    window.addEventListener("resize", checkOrientation);
-    return () => {
-      window.removeEventListener("orientationchange", checkOrientation);
-      window.removeEventListener("resize", checkOrientation);
-    };
-  }, []);
+  const playSuccessSound = () => {
+    const audio = new Audio("/sounds/success.wav");
+    audio.play().catch(() => { });
+  };
 
   useEffect(() => {
     if (!started) return;
@@ -156,7 +164,7 @@ export default function AppleTenGameMobile() {
 
     const total = uniqueSelected.reduce((acc, { row, col }) => acc + grid[row][col], 0);
     if (total === 10) {
-      successSoundRef.current?.play().catch(() => { });
+      playSuccessSound();
       const newGrid = grid.map((row) => [...row]);
       uniqueSelected.forEach(({ row, col }) => (newGrid[row][col] = null));
       setGrid(newGrid);
@@ -173,22 +181,18 @@ export default function AppleTenGameMobile() {
   const updateSelection = (pos) => {
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
+    const style = getComputedStyle(container);
+    const paddingLeft = parseFloat(style.paddingLeft);
+    const paddingTop = parseFloat(style.paddingTop);
+    const cellWidth = (rect.width - paddingLeft * 2) / grid[0].length;
+    const cellHeight = (rect.height - paddingTop * 2) / grid.length;
 
-    const scaleX = container.offsetWidth / rect.width;
-    const scaleY = container.offsetHeight / rect.height;
-
-    // ✅ 좌표 계산 보정 (top/left 기준 맞춤)
     const correctedStartX = Math.min(dragStart.x, pos.x);
     const correctedEndX = Math.max(dragStart.x, pos.x);
     const correctedStartY = Math.min(dragStart.y, pos.y);
     const correctedEndY = Math.max(dragStart.y, pos.y);
 
     const selectedCells = [];
-    const style = getComputedStyle(container);
-    const paddingLeft = parseFloat(style.paddingLeft);
-    const paddingTop = parseFloat(style.paddingTop);
-    const cellWidth = (rect.width - paddingLeft * 2) / grid[0].length;
-    const cellHeight = (rect.height - paddingTop * 2) / grid.length;
 
     grid.forEach((row, rowIndex) => {
       row.forEach((_, colIndex) => {
@@ -210,14 +214,7 @@ export default function AppleTenGameMobile() {
     setSelected(selectedCells);
   };
 
-
   const handleStart = () => {
-    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-    if (!isLandscape) {
-      alert("화면을 가로로 돌려주세요!");
-      return;
-    }
-
     setStarted(false);
     setTimeout(() => {
       setGrid(generateAppleGrid());
@@ -235,13 +232,12 @@ export default function AppleTenGameMobile() {
       if (screen.orientation?.lock) {
         screen.orientation.lock("landscape").catch(() => { });
       }
-      // ✅ 추가된 부분: 주소창 자동 숨김 유도
+
       setTimeout(() => {
         window.scrollTo(0, 1);
       }, 500);
     }, 50);
   };
-
 
   const handleReset = () => {
     setStarted(false);
@@ -277,14 +273,12 @@ export default function AppleTenGameMobile() {
       console.warn("화면 방향 잠금 해제 실패", e);
     }
 
-    // 세로 안내 메시지
     alert("홈으로 이동합니다. 화면이 세로가 아닐 경우, 직접 회전해주세요 📱");
 
     setTimeout(() => {
       navigate("/challenge");
     }, 300);
   };
-
 
   const toggleBgm = () => setBgmOn((prev) => !prev);
   const isSelected = (row, col) => selected.some((c) => c.row === row && c.col === col);
@@ -293,15 +287,6 @@ export default function AppleTenGameMobile() {
   const progressPercent = (timeLeft / 120) * 100;
 
   if (!fullScreen) {
-    if (!orientationOk) {
-      return (
-        <div className={styles.fullScreenWrapper}>
-          <h2>📱 화면을 가로로 돌려주세요</h2>
-          <p>게임은 가로 모드에서만 실행됩니다</p>
-        </div>
-      );
-    }
-
     return (
       <div className={styles.fullScreenWrapper}>
         <h2>전체화면 모드로 시작할까요?</h2>
@@ -312,7 +297,6 @@ export default function AppleTenGameMobile() {
     );
   }
 
-
   return (
     <div className={styles.fullScreenWrapper}>
       {started && timeLeft > 0 && !isSubmitted && (
@@ -322,12 +306,10 @@ export default function AppleTenGameMobile() {
           <button className={styles.btn} onClick={toggleBgm}>
             {bgmOn ? "🔈 BGM 끄기" : "🔇 BGM 켜기"}
           </button>
-          <button className={styles.btn} onClick={handleExitToHome}>
-            🏠 홈으로
-          </button>
-
+          <button className={styles.btn} onClick={handleExitToHome}>🏠 홈으로</button>
         </div>
       )}
+
       <div className={styles.gameMainRow}>
         <div
           className={styles.gridContainer}
@@ -378,11 +360,13 @@ export default function AppleTenGameMobile() {
             />
           )}
         </div>
+
         <div className={styles.timeBarContainer}>
           <div className={styles.timeText}>{timeLeft}s</div>
           <div className={styles.timeBar} style={{ height: `${progressPercent}%` }}></div>
         </div>
       </div>
+
       {timeLeft === 0 && (
         <div className={styles.gameOverOverlay}>
           <div className={styles.gameOverContent}>
@@ -412,7 +396,6 @@ export default function AppleTenGameMobile() {
       )}
 
       <audio ref={bgmRef} loop src="/sounds/3.mp3" />
-      <audio ref={successSoundRef} src="/sounds/success.wav" />
     </div>
   );
 }

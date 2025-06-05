@@ -133,18 +133,38 @@ export const checkAgreement = async (uid) => {
 export const saveMember = async (member) => {
   const docRef = doc(db, "members", String(member.id));
   const memberToSave = {
-    ...member,
-    teamId: member.teamId, // teamId 저장
+    id: member.id,
+    name: member.name,
+    teamId: member.teamId,
+    partyId: member.partyId,
+    level: member.level,          // ✅ 반드시 포함
+    scores: member.scores || {},  // ✅ 반드시 포함
   };
-  delete memberToSave.team; // 혹시 남아있을 team 필드는 지운다
   await setDoc(docRef, memberToSave);
 };
+
 
 // ✅ 참가자 불러오기
 export const loadMembers = async () => {
   const snapshot = await getDocs(collection(db, "members"));
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
+
+export const fetchActiveAnnouncement = async () => {
+  const q = query(
+    collection(db, "announcements"),
+    where("active", "==", true),
+    orderBy("createdAt", "desc")
+  );
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    const docSnap = snapshot.docs[0];
+    return { id: docSnap.id, ...docSnap.data() };
+  }
+  return null;
+};
+
+
 
 // ✅ 특정 파티의 참가자만 불러오기
 export const loadMembersByParty = async (partyId) => {
@@ -155,6 +175,34 @@ export const loadMembersByParty = async (partyId) => {
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
+
+export const fetchAllAnnouncements = async () => {
+  const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+};
+
+export const addAnnouncement = async ({ title, content, active }) => {
+  const createdAt = new Date();
+  await addDoc(collection(db, "announcements"), {
+    title,
+    content,
+    active,
+    createdAt,
+  });
+};
+export const updateAnnouncement = async (id, updatedData) => {
+  const ref = doc(db, "announcements", id);
+  await updateDoc(ref, updatedData);
+};
+export const deleteAnnouncement = async (id) => {
+  const ref = doc(db, "announcements", id);
+  await deleteDoc(ref);
+};
+
 
 // ✅ 참가자 삭제
 export const deleteMember = async (memberId) => {
@@ -350,7 +398,7 @@ export async function saveOneToFiftyRecord(userId, name, time) {
     await setDoc(recordRef, {
       name,
       bestTime: parseFloat(time),
-      createdAt: new Date(),
+      createdAt: serverTimestamp(), // ✅ 변경
     });
     return true; // 기록 갱신됨
   } else {

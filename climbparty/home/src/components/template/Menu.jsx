@@ -55,6 +55,7 @@ export default function Menu() {
                     <li><a href="/admin/party-team" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/party-team")}>🎉 파티명&조별설정</a></li>
                     <li><a href="/admin/partyTape" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a></li>
                     <li><a href="/admin/rankPage" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/rankPage")}>📊 전체랭킹</a></li>
+                    <li><a href="/admin/announcement" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/announcement")}>공지사항</a></li>
                   </ul>
                 </div>
               </>
@@ -104,6 +105,7 @@ export default function Menu() {
                     <a href="/admin/party-team" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/party-team")}>🎉 파티 & 조 구성</a>
                     <a href="/admin/partyTape" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/partyTape")}>🎨 테이프 점수 설정</a>
                     <a href="/admin/rankPage" className="text-dark" onClick={(e) => handleProtectedClick(e, "/admin/rankPage")}>📊 전체랭킹</a>
+                    <a href="/admin/announcement" className="dropdown-item" onClick={(e) => handleProtectedClick(e, "/admin/announcement")}>공지사항</a>
                   </div>
                 )}
               </div>

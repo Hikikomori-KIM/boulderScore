@@ -33,7 +33,6 @@ import BoardNew from './components/board/boardNew';
 import OpenInBrowser from './components/template/OpenInBrowser';
 import BoardDetail from './components/board/boardDetail';
 import BoardEdit from './components/board/boardEdit';
-import "react-toastify/dist/ReactToastify.css";
 import OneToFiftyGame from './components/challenge/OneToFiftyGame';
 import OneToFiftyRanking from './components/challenge/OneToFiftyRanking';
 import ChallengeHome from './components/challenge/ChallengeHome';

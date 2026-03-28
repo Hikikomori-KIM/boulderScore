@@ -12,6 +12,9 @@ export default function OneToFiftyRanking() {
     { rank: 1, item: "딥퍼랑스 핸드크림", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1745889618/1%EB%93%B1%EC%83%81%ED%92%88_ca7qdt.jpg" },
     { rank: 2, item: "스타벅스 기프티콘", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1745889612/2%EB%93%B1%EC%83%81%ED%92%88_cxohzy.jpg" },
     { rank: 3, item: "베스킨라빈스 싱글콘", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1745889614/3%EB%93%B1%EC%83%81%ED%92%88_l4y9eb.jpg" },
+    { rank: 4, item: "스포츠 키링", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747977863/%ED%99%94%EB%A9%B4_%EC%BA%A1%EC%B2%98_2025-05-23_142411_vei0zq.png" },
+    { rank: 5, item: "스포츠 키링", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747977817/da4483918ad31b4c14807a071c8b5c9b_fxowqm.jpg" },
+    { rank: 6, item: "스포츠 키링", image: "https://res.cloudinary.com/dmo7zcfxw/image/upload/v1747977809/2fca22958c420d46efc13a4427850f2c_vdfnvt.jpg" },
   ];
 
   useEffect(() => {
@@ -67,7 +70,13 @@ export default function OneToFiftyRanking() {
         {prizes.map((prize) => (
           <div className="prize-card" key={prize.rank}>
             <div className="prize-rank">
-              {prize.rank === 1 ? "🥇 1등" : prize.rank === 2 ? "🥈 2등" : "🥉 3등"}
+              {prize.rank === 1
+                ? "🥇 1등"
+                : prize.rank === 2
+                  ? "🥈 2등"
+                  : prize.rank === 3
+                    ? "🥉 3등"
+                    : `${prize.rank}등`}
             </div>
             <img src={prize.image} alt={prize.item} className="prize-img" />
             <div className="prize-item">{prize.item}</div>

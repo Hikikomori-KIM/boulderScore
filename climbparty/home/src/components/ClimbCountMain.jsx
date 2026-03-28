@@ -1,12 +1,78 @@
 import { ShieldCheck, AlertCircle, ActivitySquare, Footprints, Zap } from "lucide-react";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useAuth } from "../components/AuthContext";
+import { Modal, Button } from "react-bootstrap";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "../firebase";
 
 export default function ClimbCountMain() {
   const { user } = useAuth();
+  const [showModal, setShowModal] = useState(false);
+  const [announcement, setAnnouncement] = useState(null);
+
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const hiddenDate = localStorage.getItem("hideAnnouncementDate");
+
+    if (hiddenDate === today) return; // 오늘 안보기 설정되어 있으면 모달 X
+
+    const fetchAnnouncement = async () => {
+      const q = query(
+        collection(db, "announcements"),
+        where("active", "==", true),
+        orderBy("createdAt", "desc")
+      );
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        setAnnouncement(snapshot.docs[0].data());
+        setShowModal(true);
+      }
+    };
+    fetchAnnouncement();
+  }, []);
+
 
   return (
     <div className="bg-white">
+      {/* 공지사항 모달 */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>📢 {announcement?.title}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {/* 날짜와 시간 표시 */}
+          {announcement?.createdAt && (
+            <div className="text-muted small mb-2">
+              📅 {announcement.createdAt.toDate().toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+          )}
+
+          {/* 본문 내용 */}
+          <p style={{ whiteSpace: "pre-line" }}>{announcement?.content}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>닫기</Button>
+          <Button
+            variant="outline-secondary"
+            onClick={() => {
+              const today = new Date().toISOString().slice(0, 10);
+              localStorage.setItem("hideAnnouncementDate", today);
+              setShowModal(false);
+            }}
+          >
+            오늘 하루 안보기
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
       {/* Hero Section */}
       <div className="text-center bg-light p-5 border-bottom">
         <h1 className="fw-bold display-4 mb-3" style={{ wordBreak: "keep-all", color: "#2c3e50" }}>
@@ -92,7 +158,6 @@ export default function ClimbCountMain() {
           </div>
         </div>
       </div>
-
 
       {/* 제작자 정보 */}
       <div className="card text-center border-0 mt-5 mb-5">

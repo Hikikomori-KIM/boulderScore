@@ -1,0 +1,11 @@
+/* index.css 최상단에 추가 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+}

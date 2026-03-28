@@ -1,4 +1,3 @@
-// 📁 App.jsx
 import './App.css';
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
@@ -7,6 +6,12 @@ import Footer from './components/template/Footer';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 import { ToastContainer } from "react-toastify";
+import RoomDetail from "./components/projects/RoomDetail";
+
+// ✅ 새 페이지 import
+import RoomScorerPage from "./components/projects/pages/RoomScorerPage";
+import RoomTeamScoresPage from "./components/projects/pages/RoomTeamScoresPage";
+import RoomRankingsPage from "./components/projects/pages/RoomRankingsPage";
 
 // 페이지들
 import TeamCount from './components/TeamCount';
@@ -32,61 +37,49 @@ import "react-toastify/dist/ReactToastify.css";
 import OneToFiftyGame from './components/challenge/OneToFiftyGame';
 import OneToFiftyRanking from './components/challenge/OneToFiftyRanking';
 import ChallengeHome from './components/challenge/ChallengeHome';
-// import AppleTenGame from './components/challenge/apple-ten/AppleTenGame';
-import AppleTenRanking from './components/challenge/apple-ten/AppleTenRank';
 import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
 import VersionChecker from './VersionChecker';
 import AppleTenGamePC from './components/challenge/apple-ten/AppleTenGamePC';
 import AppleTenGameMobile from './components/challenge/apple-ten/AppleTenGameMobile';
-import CrewList from './components/crew/CrewList';
-import CrewCreate from './components/crew/CrewCreate';
-import CrewDetail from './components/crew/CrewDetail';
-import RoomCreate from './components/crew/RoomCreate';
-import CrewInvite from './components/crew/CrewInvite';
-import RoomDetail from './components/crew/RoomDetail';
 import AdminAnnouncementPage from './components/admin/announcement';
+import { PartyProvider } from "./components/contexts/PartyContext";
+import ProjectsList from './components/projects/ProjectsList';
+import ProjectDashboard from './components/pages/ProjectDashboard';
 
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <PartyProvider>
+        <AppContent />
+      </PartyProvider>
     </AuthProvider>
   );
 }
 
-
-
 function AppContent() {
   const location = useLocation();
   const { firstCheckDone } = useAuth();
-
   const [frozenLocation, setFrozenLocation] = useState(location);
-
   const navigate = useNavigate();
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
     const isInApp = /kakaotalk|instagram|fbav|line/.test(ua);
-
     const currentPath = window.location.pathname;
-
-    // 현재 경로가 이미 안내 페이지가 아닐 때만 이동
     if (isInApp && currentPath !== "/open-in-browser") {
       navigate("/open-in-browser");
     }
   }, []);
 
-
   useEffect(() => {
-    // ✅ 인증이 완료되었을 때만 location 업데이트
     if (firstCheckDone) {
       setFrozenLocation(location);
     }
   }, [firstCheckDone, location]);
 
   return (
-    <div className="pt-5 d-flex flex-column min-vh-100">
-      <VersionChecker /> {/* ✅ 여기 추가 */}
+    <div className="d-flex flex-column min-vh-100">
+      <VersionChecker />
       <Menu />
 
       <Routes location={firstCheckDone ? location : frozenLocation}>
@@ -98,7 +91,46 @@ function AppContent() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/open-in-browser" element={<OpenInBrowser />} />
 
-        {/* ✅ 보호 라우트 */}
+        {/* ✅ 방 라우트 */}
+        <Route path="/rooms/:roomId" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <RoomDetail />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/rooms/:roomId/scorer" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <RoomScorerPage />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/rooms/:roomId/team-scores" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <RoomTeamScoresPage />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/rooms/:roomId/rankings" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <RoomRankingsPage />
+          </RoleProtectedRoute>
+        } />
+
+        {/* ✅ 프로젝트 기반 라우트 */}
+        <Route path="/projects/:id" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <ProjectDashboard />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/projects/list" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <ProjectsList />
+          </RoleProtectedRoute>
+        } />
+        <Route path="/projects/:id/scorer" element={
+          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
+            <ScorerSheet />
+          </RoleProtectedRoute>
+        } />
+
+        {/* ✅ 일반 기능 */}
         <Route path="/teamCount" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
             <TeamCount />
@@ -114,7 +146,8 @@ function AppContent() {
             <MyPage />
           </RoleProtectedRoute>
         } />
-        {/* 게시판 페이지 */}
+
+        {/* 게시판 */}
         <Route path="/board/list" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
             <BoardList />
@@ -135,7 +168,8 @@ function AppContent() {
             <BoardEdit />
           </RoleProtectedRoute>
         } />
-        {/* 게임 페이지 */}
+
+        {/* 게임 */}
         <Route path="/challenge" element={
           <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
             <ChallengeHome />
@@ -166,49 +200,13 @@ function AppContent() {
             <AppleTenRank />
           </RoleProtectedRoute>
         } />
-        {/* ✅ 크루/방 페이지 (일반 유저 이상 접근 가능) */}
-        <Route path="/crew" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewList />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/create" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewCreate />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/:crewId" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewDetail />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/:crewId/room/create" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <RoomCreate />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/invite/:crewId" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <CrewInvite />
-          </RoleProtectedRoute>
-        } />
-        <Route path="/crew/:crewId/room/:roomId" element={
-          <RoleProtectedRoute allowRoles={["user", "admin", "superadmin"]}>
-            <RoomDetail />
-          </RoleProtectedRoute>
-        } />
-        {/* ✅ 어드민 전용 보호라우트*/}
-        <Route path="/ScorerSheet" element={
-          <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
-            <ScorerSheet />
-          </RoleProtectedRoute>
-        } />
+
+        {/* ✅ 어드민 */}
         <Route path="/admin/announcement" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
             <AdminAnnouncementPage />
           </RoleProtectedRoute>
         } />
-
         <Route path="/admin/userlist" element={
           <RoleProtectedRoute allowRoles={["admin", "superadmin"]}>
             <AdminUserList />
@@ -234,8 +232,6 @@ function AppContent() {
             <AdminPartyTape />
           </RoleProtectedRoute>
         } />
-        {/* ✅ 슈퍼 어드민 전용 보호라우트*/}
-
       </Routes>
 
       <Footer />

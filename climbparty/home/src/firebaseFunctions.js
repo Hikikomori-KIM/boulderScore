@@ -1,34 +1,22 @@
+// firebaseFunctions.js
 import { db, auth } from "./firebase";
-import { increment } from "firebase/firestore"; // 맨 위에 추가
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  setDoc,
-  deleteDoc,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-  sendPasswordResetEmail,
-  setPersistence,
-  browserLocalPersistence,
-  signOut,
-  sendEmailVerification,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
-import { arrayUnion, arrayRemove } from "firebase/firestore";
-import { where } from "firebase/firestore";
-import { query, orderBy } from "firebase/firestore";
+export { db, auth };
 
-// ✅ 회원가입
+import {
+  increment, collection, getDocs, setDoc, deleteDoc, doc, getDoc,
+  addDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove,
+  where, query, orderBy
+} from "firebase/firestore";
+
+import {
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile,
+  sendPasswordResetEmail, setPersistence, browserLocalPersistence, signOut,
+  sendEmailVerification, GoogleAuthProvider, signInWithPopup, getAuth
+} from "firebase/auth";
+
+/* ─────────────────────────────────────────────────────────────
+ * 기본 회원/게시판/게임 등 기존 기능
+ * ───────────────────────────────────────────────────────────── */
 export const registerUser = async (email, password, name) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
@@ -41,148 +29,258 @@ export const registerUser = async (email, password, name) => {
     name,
     createdAt: new Date(),
     role: "user",
-    agreed: true, // 기본값 false
+    agreed: true,
   });
 
   await sendEmailVerification(user);
   await signOut(auth);
 };
 
-// ✅ 로그인 (이메일)
 export const loginUser = async (email, password) => {
   await setPersistence(auth, browserLocalPersistence);
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  return userCredential;
+  return await signInWithEmailAndPassword(auth, email, password);
 };
 
-// ✅ 비밀번호 재설정
-export const resetPassword = (email) => {
-  return sendPasswordResetEmail(auth, email);
-};
+export const resetPassword = (email) => sendPasswordResetEmail(auth, email);
 
-// ✅ 이메일 인증 다시 보내기
 export const sendVerificationEmail = async () => {
-  if (auth.currentUser) {
-    await sendEmailVerification(auth.currentUser);
-  } else {
-    throw new Error("현재 로그인된 사용자가 없습니다.");
-  }
+  if (!auth.currentUser) throw new Error("현재 로그인된 사용자가 없습니다.");
+  await sendEmailVerification(auth.currentUser);
 };
 
-// ✅ 역할 조회
 export const getUserRole = async (uid) => {
-  const userRef = doc(db, "users", uid);
-  const snapshot = await getDoc(userRef);
+  const snapshot = await getDoc(doc(db, "users", uid));
   return snapshot.exists() ? snapshot.data().role : null;
 };
 
-// ✅ 구글 로그인
 export const googleLogin = async () => {
   const provider = new GoogleAuthProvider();
+  await setPersistence(auth, browserLocalPersistence);
+  const result = await signInWithPopup(auth, provider);
+  const user = result.user;
 
-  try {
-    console.log("🌐 GoogleLogin 함수 진입");
-    await setPersistence(auth, browserLocalPersistence); // ✅ 세션 유지
-    console.log("🔒 setPersistence 완료");
-
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    console.log("✅ Google 로그인 성공:", user);
-
-    const userRef = doc(db, "users", user.uid);
-    const snapshot = await getDoc(userRef);
-
-    if (!snapshot.exists()) {
-      console.log("📄 Firestore 사용자 문서 없음 → 새로 생성");
-      await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || "이름 없음",
-        role: "user",
-        agreed: false,
-        createdAt: new Date(),
-      });
-    } else {
-      console.log("📄 Firestore 사용자 문서 이미 존재");
-    }
-
-    return user;
-  } catch (error) {
-    console.error("❌ Google 로그인 실패:", error);
-    throw error;
-  }
-};
-
-
-// ✅ 약관 동의 처리
-export const saveUserAfterAgreement = async (user) => {
   const userRef = doc(db, "users", user.uid);
-  await updateDoc(userRef, {
-    agreed: true,
-  });
+  const snapshot = await getDoc(userRef);
+
+  if (!snapshot.exists()) {
+    await setDoc(userRef, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName || "이름 없음",
+      role: "user",
+      agreed: false,
+      createdAt: new Date(),
+    });
+  }
+  return user;
 };
 
-// ✅ 약관 동의 여부 확인
+export const saveUserAfterAgreement = async (user) => {
+  await updateDoc(doc(db, "users", user.uid), { agreed: true });
+};
+
 export const checkAgreement = async (uid) => {
-  const userRef = doc(db, "users", uid);
-  const snapshot = await getDoc(userRef);
+  const snapshot = await getDoc(doc(db, "users", uid));
   return snapshot.exists() ? snapshot.data().agreed === true : false;
 };
 
-// ✅ 참가자 저장
+/* 참가자 (기존 전역 members) */
 export const saveMember = async (member) => {
   const docRef = doc(db, "members", String(member.id));
-  const memberToSave = {
+  await setDoc(docRef, {
     id: member.id,
     name: member.name,
     teamId: member.teamId,
     partyId: member.partyId,
-    level: member.level,          // ✅ 반드시 포함
-    scores: member.scores || {},  // ✅ 반드시 포함
-  };
-  await setDoc(docRef, memberToSave);
+    level: member.level,
+    scores: member.scores || {},
+  });
 };
 
-
-// ✅ 참가자 불러오기
 export const loadMembers = async () => {
   const snapshot = await getDocs(collection(db, "members"));
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
-export const fetchActiveAnnouncement = async () => {
-  const q = query(
-    collection(db, "announcements"),
-    where("active", "==", true),
-    orderBy("createdAt", "desc")
-  );
-  const snapshot = await getDocs(q);
-  if (!snapshot.empty) {
-    const docSnap = snapshot.docs[0];
-    return { id: docSnap.id, ...docSnap.data() };
-  }
-  return null;
-};
-
-
-
-// ✅ 특정 파티의 참가자만 불러오기
 export const loadMembersByParty = async (partyId) => {
-  const q = query(
-    collection(db, "members"),
-    where("partyId", "==", partyId)
-  );
+  const q = query(collection(db, "members"), where("partyId", "==", partyId));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
 
-export const fetchAllAnnouncements = async () => {
-  const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+export const deleteMember = async (memberId) => {
+  await deleteDoc(doc(db, "members", String(memberId)));
+};
+
+export const updateMember = async (member) => {
+  const docRef = doc(db, "members", String(member.id));
+  const memberToUpdate = { ...member, teamId: member.teamId };
+  delete memberToUpdate.team;
+  await setDoc(docRef, memberToUpdate);
+};
+
+/* 암장 */
+export const loadGyms = async () => {
+  const snapshot = await getDocs(collection(db, "gyms"));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+export const loadGymTapes = async (gymId) => {
+  const snapshot = await getDoc(doc(db, "gyms", gymId));
+  return snapshot.exists() ? snapshot.data().tapes || [] : [];
+};
+
+export const addTapeToGym = async (gymId, tapeName) => {
+  const snapshot = await getDoc(doc(db, "gyms", gymId));
+  if (!snapshot.exists()) return;
+  const updatedTapes = [...(snapshot.data().tapes || []), tapeName];
+  await updateDoc(doc(db, "gyms", gymId), { tapes: updatedTapes });
+};
+
+export const deleteTapeFromGym = async (gymId, tapeToDelete) => {
+  const snapshot = await getDoc(doc(db, "gyms", gymId));
+  if (!snapshot.exists()) return;
+  const updatedTapes = snapshot.data().tapes.filter((t) => t !== tapeToDelete);
+  await updateDoc(doc(db, "gyms", gymId), { tapes: updatedTapes });
+};
+
+/* 파티 */
+export const saveParty = async ({ name, gymId, scores }) => {
+  return await addDoc(collection(db, "parties"), { name, gymId, scores });
+};
+
+export const loadParties = async () => {
+  const snapshot = await getDocs(collection(db, "parties"));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+/* 게시판 */
+export const savePost = async (post) => {
+  return await addDoc(collection(db, "posts"), {
+    ...post,
+    createdAt: serverTimestamp(),
+    views: 0,
+    likes: 0,
+    likedBy: [],
+  });
+};
+
+export const loadPosts = async () => {
+  const snapshot = await getDocs(collection(db, "posts"));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+export const loadPostById = async (id) => {
+  const snapshot = await getDoc(doc(db, "posts", id));
+  return { id: snapshot.id, ...snapshot.data() };
+};
+
+export const increaseViewCount = async (postId, uid) => {
+  if (!uid) return;
+  const postRef = doc(db, "posts", postId);
+  const snapshot = await getDoc(postRef);
+  if (!snapshot.exists()) return;
+  if (!(snapshot.data().viewedBy || []).includes(uid)) {
+    await updateDoc(postRef, {
+      views: (snapshot.data().views || 0) + 1,
+      viewedBy: arrayUnion(uid),
+    });
+  }
+};
+
+export const toggleLikePost = async (postId, uid) => {
+  const postRef = doc(db, "posts", postId);
+  const snapshot = await getDoc(postRef);
+  if (!snapshot.exists()) return null;
+  const alreadyLiked = snapshot.data().likedBy?.includes(uid);
+  if (alreadyLiked) {
+    await updateDoc(postRef, { likes: (snapshot.data().likes || 1) - 1, likedBy: arrayRemove(uid) });
+    return { liked: false };
+  } else {
+    await updateDoc(postRef, { likes: (snapshot.data().likes || 0) + 1, likedBy: arrayUnion(uid) });
+    return { liked: true };
+  }
+};
+
+export const deletePost = async (postId) => {
+  await deleteDoc(doc(db, "posts", postId));
+};
+
+export const addComment = async (postId, { content, author, authorId }) => {
+  const commentsRef = collection(db, "posts", postId, "comments");
+  await addDoc(commentsRef, { content, author, authorId, createdAt: serverTimestamp() });
+  await updateDoc(doc(db, "posts", postId), { commentCount: increment(1) });
+};
+
+export const getComments = async (postId) => {
+  const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+};
+
+export const deleteComment = async (postId, commentId) => {
+  await deleteDoc(doc(db, "posts", postId, "comments", commentId));
+  await updateDoc(doc(db, "posts", postId), { commentCount: increment(-1) });
+};
+
+/* 1to50 */
+export const saveOneToFiftyRecord = async (userId, name, time) => {
+  const recordRef = doc(db, "oneToFiftyRecords", userId);
+  const snapshot = await getDoc(recordRef);
+  if (!snapshot.exists() || snapshot.data().bestTime > parseFloat(time)) {
+    await setDoc(recordRef, { name, bestTime: parseFloat(time), createdAt: serverTimestamp() });
+    return true;
+  }
+  return false;
+};
+
+/* 프로젝트(기존) */
+export const createProjectRoom = async (name, creator) => {
+  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const projectRef = doc(collection(db, "projects"));
+  await setDoc(projectRef, {
+    name,
+    code,
+    createdAt: serverTimestamp(),
+    createdBy: {
+      uid: creator.uid,
+      name: creator.name || creator.displayName || "이름 없음",
+      email: creator.email || "",
+    },
+    tapeScores: {},
+    teams: [],
+  });
+  await setDoc(doc(db, "projects", projectRef.id, "members", creator.uid), {
+    uid: creator.uid,
+    name: creator.name || creator.displayName || "이름 없음",
+    role: "owner",
+    joinedAt: serverTimestamp(),
+  });
+  return { id: projectRef.id, code };
+};
+
+export const joinProjectByCode = async (code, user) => {
+  const q = query(collection(db, "projects"), where("code", "==", code));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) throw new Error("유효하지 않은 초대코드입니다.");
+  const projectDoc = snapshot.docs[0];
+  const projectId = projectDoc.id;
+  const memberRef = doc(db, "projects", projectId, "members", user.uid);
+  const memberSnap = await getDoc(memberRef);
+  if (!memberSnap.exists()) {
+    await setDoc(memberRef, {
+      uid: user.uid,
+      name: user.name || user.displayName || "이름 없음",
+      role: "user",
+      joinedAt: serverTimestamp(),
+    });
+  }
+  return { projectId };
+};
+
+export const updatePost = async (id, updatedData) => {
+  const postRef = doc(db, "posts", id);
+  await updateDoc(postRef, updatedData);
 };
 
 export const addAnnouncement = async ({ title, content, active }) => {
@@ -194,346 +292,297 @@ export const addAnnouncement = async ({ title, content, active }) => {
     createdAt,
   });
 };
-export const updateAnnouncement = async (id, updatedData) => {
-  const ref = doc(db, "announcements", id);
-  await updateDoc(ref, updatedData);
-};
+
 export const deleteAnnouncement = async (id) => {
   const ref = doc(db, "announcements", id);
   await deleteDoc(ref);
 };
 
-
-// ✅ 참가자 삭제
-export const deleteMember = async (memberId) => {
-  const docRef = doc(db, "members", String(memberId));
-  await deleteDoc(docRef);
-};
-
-// ✅ 참가자 수정
-export const updateMember = async (member) => {
-  const docRef = doc(db, "members", String(member.id));
-  const memberToUpdate = {
-    ...member,
-    teamId: member.teamId, // teamId 저장
-  };
-  delete memberToUpdate.team; // 혹시 남아있을 team 필드는 지운다
-  await setDoc(docRef, memberToUpdate);
-};
-
-
-// ✅ 암장 목록 불러오기
-export const loadGyms = async () => {
-  const snapshot = await getDocs(collection(db, "gyms"));
+export const fetchAllAnnouncements = async () => {
+  const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
   return snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   }));
 };
 
-// ✅ 특정 암장의 테이프 불러오기
-export const loadGymTapes = async (gymId) => {
-  const gymRef = doc(db, "gyms", gymId);
-  const snapshot = await getDoc(gymRef);
-  if (!snapshot.exists()) return [];
-  return snapshot.data().tapes || [];
+export const updateAnnouncement = async (id, updatedData) => {
+  const ref = doc(db, "announcements", id);
+  await updateDoc(ref, updatedData);
 };
 
-// ✅ 암장에 테이프 추가
-export const addTapeToGym = async (gymId, tapeName) => {
-  const snapshot = await getDoc(doc(db, "gyms", gymId));
-  if (!snapshot.exists()) return;
+/* ─────────────────────────────────────────────────────────────
+ * Rooms (방) - 생성/입장/나가기/채팅/권한/설정/채점
+ * ───────────────────────────────────────────────────────────── */
+const clean = (obj) =>
+  Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined && v !== null));
 
-  const gymData = snapshot.data();
-  const updatedTapes = [...(gymData.tapes || []), tapeName];
-  await updateDoc(doc(db, "gyms", gymId), { tapes: updatedTapes });
-};
+export const createRoom = async (name, status, createdBy) => {
+  const authI = getAuth();
+  const user = authI.currentUser;
+  const uid = createdBy || user?.uid;
+  if (!uid) throw new Error("로그인 상태에서만 방을 만들 수 있습니다.");
 
-// ✅ 암장에서 테이프 삭제
-export const deleteTapeFromGym = async (gymId, tapeToDelete) => {
-  const snapshot = await getDoc(doc(db, "gyms", gymId));
-  if (!snapshot.exists()) return;
-
-  const gymData = snapshot.data();
-  const updatedTapes = gymData.tapes.filter((t) => t !== tapeToDelete);
-  await updateDoc(doc(db, "gyms", gymId), { tapes: updatedTapes });
-};
-
-// ✅ 파티 저장
-export const saveParty = async ({ name, gymId, scores }) => {
-  return await addDoc(collection(db, "parties"), {
-    name,
-    gymId,
-    scores,
-  });
-};
-
-// ✅ 파티 목록 불러오기
-export const loadParties = async () => {
-  const snapshot = await getDocs(collection(db, "parties"));
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-};
-// ✅ 게시글 저장
-export const savePost = async (post) => {
-  return await addDoc(collection(db, "posts"), {
-    ...post,
-    createdAt: serverTimestamp(),  // ✅ 꼭 Timestamp로 저장
-    views: 0,
-    likes: 0,
-    likedBy: [],
-  });
-};
-// ✅ 게시글 목록 불러오기 (최신순)
-export const loadPosts = async () => {
-  const snapshot = await getDocs(collection(db, "posts"));
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-};
-// ✅ 특정 게시글 불러오기
-export const loadPostById = async (id) => {
-  const ref = doc(db, "posts", id);
-  const snapshot = await getDoc(ref);
-  return { id: snapshot.id, ...snapshot.data() };
-};
-// ✅ 조회수 증가 + 중복 방지
-export const increaseViewCount = async (postId, uid) => {
-  if (!uid) return; // ✅ uid가 없으면 아무 작업도 안 함
-
-  const postRef = doc(db, "posts", postId);
-  const snapshot = await getDoc(postRef);
-
-  if (!snapshot.exists()) return;
-
-  const post = snapshot.data();
-  const alreadyViewed = (post.viewedBy || []).includes(uid); // ✅ 방어 처리
-
-  if (!alreadyViewed) {
-    await updateDoc(postRef, {
-      views: (post.views || 0) + 1,
-      viewedBy: arrayUnion(uid),
-    });
-  }
-};
-// ✅ 좋아요 토글 함수 (있으면 취소, 없으면 추가)
-export const toggleLikePost = async (postId, uid) => {
-  const postRef = doc(db, "posts", postId);
-  const snapshot = await getDoc(postRef);
-  if (!snapshot.exists()) return null;
-
-  const post = snapshot.data();
-  const alreadyLiked = post.likedBy?.includes(uid);
-
-  if (alreadyLiked) {
-    // 좋아요 취소
-    await updateDoc(postRef, {
-      likes: (post.likes || 1) - 1,
-      likedBy: arrayRemove(uid),
-    });
-    return { liked: false };
-  } else {
-    // 좋아요 추가
-    await updateDoc(postRef, {
-      likes: (post.likes || 0) + 1,
-      likedBy: arrayUnion(uid),
-    });
-    return { liked: true };
-  }
-};
-// ✅ 게시글 삭제
-export const deletePost = async (postId) => {
-  const postRef = doc(db, "posts", postId);
-  await deleteDoc(postRef);
-};
-// ✅ 댓글 저장
-export const addComment = async (postId, { content, author, authorId }) => {
-  const commentsRef = collection(db, "posts", postId, "comments");
-  await addDoc(commentsRef, {
-    content,
-    author,
-    authorId,
+  const data = clean({
+    name: name?.trim(),
+    status: status || "open",
     createdAt: serverTimestamp(),
+    createdBy: uid,
+    members: [uid],
   });
 
-  // 🔥 댓글 수 증가
-  const postRef = doc(db, "posts", postId);
-  await updateDoc(postRef, {
-    commentCount: increment(1),
-  });
+  const docRef = await addDoc(collection(db, "rooms"), data);
+  return docRef.id;
 };
 
-export const getComments = async (postId) => {
-  const commentsRef = collection(db, "posts", postId, "comments");
-  const q = query(commentsRef, orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-};
-export const updatePost = async (id, updatedData) => {
-  const postRef = doc(db, "posts", id);
-  await updateDoc(postRef, updatedData);
-};
-// ✅ 댓글 삭제 함수
-export const deleteComment = async (postId, commentId) => {
-  const commentRef = doc(db, "posts", postId, "comments", commentId);
-  await deleteDoc(commentRef);
+export const joinRoom = async (roomId) => {
+  const authI = getAuth();
+  const user = authI.currentUser;
+  if (!user) throw new Error("로그인이 필요합니다.");
 
-  // 🔥 댓글 수 감소
-  const postRef = doc(db, "posts", postId);
-  await updateDoc(postRef, {
-    commentCount: increment(-1),
+  const ref = doc(db, "rooms", roomId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error("방을 찾을 수 없습니다.");
+
+  await updateDoc(ref, {
+    members: arrayUnion(user.uid),
+    lastJoinedAt: serverTimestamp(),
   });
 };
 
-//기록 저장함수
+export const leaveRoom = async (roomId) => {
+  const authI = getAuth();
+  const user = authI.currentUser;
+  if (!user) throw new Error("로그인이 필요합니다.");
 
-export async function saveOneToFiftyRecord(userId, name, time) {
-  const recordRef = doc(db, "oneToFiftyRecords", userId);
-  const snapshot = await getDoc(recordRef);
+  const ref = doc(db, "rooms", roomId);
+  await updateDoc(ref, {
+    members: arrayRemove(user.uid),
+  });
+};
 
-  if (!snapshot.exists() || snapshot.data().bestTime > parseFloat(time)) {
-    await setDoc(recordRef, {
-      name,
-      bestTime: parseFloat(time),
-      createdAt: serverTimestamp(), // ✅ 변경
+export const sendRoomMessage = async (roomId, text) => {
+  const authI = getAuth();
+  const user = authI.currentUser;
+  if (!user) throw new Error("로그인이 필요합니다.");
+
+  const cleanText = (text || "").trim();
+  if (!cleanText) return;
+
+  const ref = collection(db, "rooms", roomId, "messages");
+  await addDoc(ref, {
+    text: cleanText,
+    authorId: user.uid,           // ✅ 규칙 요구 필드
+    createdAt: serverTimestamp()  // ✅ 규칙 요구 필드
+    // ⚠️ authorName 제거 → 규칙에 없으면 권한 에러 발생함
+  });
+};
+
+
+export const removeRoomMember = async (roomId, targetUid) => {
+  if (!targetUid) throw new Error("대상 UID가 필요합니다.");
+  const ref = doc(db, "rooms", roomId);
+  await updateDoc(ref, {
+    members: arrayRemove(targetUid),
+  });
+};
+
+export const setRoomStatus = async (roomId, status) => {
+  const next = (status || "").trim();
+  if (!next) throw new Error("유효한 상태가 필요합니다.");
+  const ref = doc(db, "rooms", roomId);
+  await updateDoc(ref, { status: next });
+};
+
+export const fetchRooms = async (uid) => {
+  if (!uid) throw new Error("로그인이 필요합니다.");
+  const qy = query(
+    collection(db, "rooms"),
+    where("createdBy", "==", uid),
+    orderBy("createdAt", "desc")
+  );
+  const snapshot = await getDocs(qy);
+  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+};
+
+/* ── 방 내부 역할(권한) ──────────────────────────────
+   role: "member" | "scorer" | "admin"
+*/
+export const setRoomRole = async (roomId, targetUid, role) => {
+  if (!targetUid) throw new Error("대상 UID 필요");
+  await setDoc(doc(db, "rooms", roomId, "roles", targetUid), { role });
+};
+
+// 방장(createdBy)도 admin으로 인식되도록 보강
+export const getRoomRole = async (roomId, uid) => {
+  if (!uid) return "member";
+  const room = await getDoc(doc(db, "rooms", roomId));
+  if (room.exists() && room.data()?.createdBy === uid) return "admin";
+  const snap = await getDoc(doc(db, "rooms", roomId, "roles", uid));
+  return snap.exists() ? (snap.data().role || "member") : "member";
+};
+
+/* ── 방 설정 (테이프 점수표/채점 모드) ───────────────── */
+export const setTapeScoreConfig = async (roomId, scoresByColor) => {
+  // 예: { "초록": 5, "파랑": 7, ... }
+  await setDoc(
+    doc(db, "rooms", roomId, "config", "tapeScores"),
+    scoresByColor || {},
+    { merge: true }
+  );
+};
+
+export const getTapeScoreConfig = async (roomId) => {
+  const snap = await getDoc(doc(db, "rooms", roomId, "config", "tapeScores"));
+  return snap.exists() ? snap.data() : {};
+};
+
+// 채점 모드: "admin"(운영진만) | "self"(본인도 가능)
+export const getScoringMode = async (roomId) => {
+  const snap = await getDoc(doc(db, "rooms", roomId, "config", "settings"));
+  if (!snap.exists()) return "admin";
+  return snap.data()?.scoringMode || "admin";
+};
+
+export const setScoringMode = async (roomId, mode) => {
+  await setDoc(
+    doc(db, "rooms", roomId, "config", "settings"),
+    { scoringMode: mode, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+};
+
+/* ── 참가자(방 단위) ─────────────────────────────────
+   rooms/{roomId}/participants/{uid}
+*/
+export const ensureParticipant = async (roomId) => {
+  const authI = getAuth();
+  const user = authI.currentUser;
+  if (!user) throw new Error("로그인이 필요합니다.");
+
+  const ref = doc(db, "rooms", roomId, "participants", user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      uid: user.uid,
+      name: user.displayName || user.email || "익명",
+      grade1: "",
+      grade2: "",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
-    return true; // 기록 갱신됨
-  } else {
-    return false; // 기존 기록이 더 좋음
   }
-}
-//✅ 크루 생성
-export const createCrew = async (crewName, ownerId, ownerName) => {
-  const crewRef = doc(collection(db, "crews"));
-  await setDoc(crewRef, {
-    crewName,
-    ownerId,
-    ownerName,
+};
+
+export const setMyGrade = async (roomId, { grade1, grade2 }) => {
+  const authI = getAuth();
+  const user = authI.currentUser;
+  if (!user) throw new Error("로그인이 필요합니다.");
+
+  const ref = doc(db, "rooms", roomId, "participants", user.uid);
+  await setDoc(
+    ref,
+    {
+      uid: user.uid,
+      name: user.displayName || user.email || "익명",
+      grade1: grade1 || "",
+      grade2: grade2 || "",
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+};
+
+/* ── 채점(점수 기록) ─────────────────────────────────
+   rooms/{roomId}/scores
+   - mode가 self면 uid는 본인으로 강제
+   - points가 생략되면 tapeScoreConfig에서 색상 점수 사용
+*/
+export const submitScore = async (
+  roomId,
+  { uid, teamId = null, color, tapeId = null, points = null }
+) => {
+  const authI = getAuth();
+  const me = authI.currentUser;
+  if (!me) throw new Error("로그인이 필요합니다.");
+
+  const mode = await getScoringMode(roomId);
+  const myRole = await getRoomRole(roomId, me.uid);
+
+  let targetUid = uid;
+  if (mode === "self") {
+    // 본인만 채점 가능
+    targetUid = me.uid;
+  } else {
+    // 운영진 모드
+    if (!(myRole === "admin" || myRole === "scorer")) {
+      throw new Error("운영진만 채점할 수 있습니다.");
+    }
+    if (!targetUid) throw new Error("대상 참가자를 선택하세요.");
+  }
+
+  const cfg = await getTapeScoreConfig(roomId);
+  const colorKey = (color || "").trim();
+  const finalPoints = points != null ? Number(points) : Number(cfg?.[colorKey] ?? 0);
+
+  await addDoc(collection(db, "rooms", roomId, "scores"), {
+    uid: targetUid,
+    teamId,
+    color: colorKey,
+    tapeId: tapeId || "",
+    points: finalPoints,
     createdAt: serverTimestamp(),
-    members: [ownerId],
-  });
-  return crewRef.id; // 생성된 크루 ID 반환
-};
-//✅ 내가 속한 크루 목록 조회
-export const loadMyCrews = async (userId) => {
-  const q = query(collection(db, "crews"), where("members", "array-contains", userId));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-};
-//✅ 크루 초대(가입) 함수
-export const joinCrew = async (crewId, userId) => {
-  const crewRef = doc(db, "crews", crewId);
-  await updateDoc(crewRef, {
-    members: arrayUnion(userId),
+    by: me.uid,
   });
 };
-//✅ 크루 상세 정보 불러오기
-export const getCrewDetail = async (crewId) => {
-  const docRef = doc(db, "crews", crewId);
-  const snapshot = await getDoc(docRef);
-  if (snapshot.exists()) {
-    return { id: snapshot.id, ...snapshot.data() };
-  } else {
-    return null;
-  }
-};
-//❌ 크루 나가기
-export const leaveCrew = async (crewId, userId) => {
-  const crewRef = doc(db, "crews", crewId);
-  await updateDoc(crewRef, {
-    members: arrayRemove(userId),
+
+/* ── 랭킹/집계 (클라이언트 합산) ────────────────────── */
+export const fetchColorRanking = async (roomId, color) => {
+  const qy = query(
+    collection(db, "rooms", roomId, "scores"),
+    where("color", "==", (color || "").trim()),
+    orderBy("createdAt", "desc")
+  );
+  const snap = await getDocs(qy);
+  const rows = snap.docs.map((d) => d.data());
+
+  const map = {};
+  rows.forEach((r) => {
+    map[r.uid] = (map[r.uid] || 0) + (r.points || 0);
   });
+  return Object.entries(map)
+    .map(([uidX, total]) => ({ uid: uidX, total }))
+    .sort((a, b) => b.total - a.total);
 };
-//🗑️ 크루 삭제 (ownerId 확인 후 삭제)
-export const deleteCrew = async (crewId, currentUserId) => {
-  const crewRef = doc(db, "crews", crewId);
-  const crewSnap = await getDoc(crewRef);
-  if (!crewSnap.exists()) return false;
 
-  const crewData = crewSnap.data();
-  if (crewData.ownerId !== currentUserId) {
-    throw new Error("크루 삭제 권한이 없습니다.");
-  }
+export const fetchOverallRanking = async (roomId) => {
+  const qy = query(
+    collection(db, "rooms", roomId, "scores"),
+    orderBy("createdAt", "desc")
+  );
+  const snap = await getDocs(qy);
+  const rows = snap.docs.map((d) => d.data());
 
-  await deleteDoc(crewRef);
-  return true;
-};
-//👥 크루 멤버 정보 조회 (users 컬렉션 참조)
-export const getCrewMembers = async (memberIds) => {
-  const usersRef = collection(db, "users");
-  const results = [];
-
-  // Firestore는 in 쿼리에 최대 10개까지만 허용
-  const chunks = [];
-  for (let i = 0; i < memberIds.length; i += 10) {
-    chunks.push(memberIds.slice(i, i + 10));
-  }
-
-  for (const chunk of chunks) {
-    const q = query(usersRef, where("uid", "in", chunk));
-    const snapshot = await getDocs(q);
-    snapshot.forEach(doc => results.push({ id: doc.id, ...doc.data() }));
-  }
-
-  return results;
-};
-//🆕 방 생성
-export const createRoom = async (crewId, roomName, creatorId, creatorName) => {
-  const roomRef = doc(collection(db, "crews", crewId, "rooms"));
-  await setDoc(roomRef, {
-    roomName,
-    creatorId,
-    creatorName,
-    createdAt: serverTimestamp(),
-    isOpen: true, // 공개 여부
-    participants: [creatorId],
+  const map = {};
+  rows.forEach((r) => {
+    map[r.uid] = (map[r.uid] || 0) + (r.points || 0);
   });
-  return roomRef.id;
+  return Object.entries(map)
+    .map(([uidX, total]) => ({ uid: uidX, total }))
+    .sort((a, b) => b.total - a.total);
 };
-//📋 특정 크루의 방 목록 불러오기
-export const loadRoomsByCrew = async (crewId) => {
-  const q = query(collection(db, "crews", crewId, "rooms"), orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-};
-//👀 방 상세 정보 불러오기
-export const getRoomDetail = async (crewId, roomId) => {
-  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
-  const snapshot = await getDoc(roomRef);
-  if (snapshot.exists()) {
-    return { id: snapshot.id, ...snapshot.data() };
-  } else {
-    return null;
-  }
-};
-//🙋 방 입장 (참가자 추가)
-export const joinRoom = async (crewId, roomId, userId) => {
-  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
-  await updateDoc(roomRef, {
-    participants: arrayUnion(userId),
-  });
-};
-//🚪 방 나가기
-export const leaveRoom = async (crewId, roomId, userId) => {
-  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
-  await updateDoc(roomRef, {
-    participants: arrayRemove(userId),
-  });
-};
-//❌ 방 삭제 (생성자만 삭제 가능)
-export const deleteRoom = async (crewId, roomId, currentUserId) => {
-  const roomRef = doc(db, "crews", crewId, "rooms", roomId);
-  const snapshot = await getDoc(roomRef);
-  if (!snapshot.exists()) return false;
 
-  const data = snapshot.data();
-  if (data.creatorId !== currentUserId) {
-    throw new Error("방 삭제 권한이 없습니다.");
-  }
+export const fetchTeamScores = async (roomId) => {
+  const snap = await getDocs(collection(db, "rooms", roomId, "scores"));
+  const rows = snap.docs.map((d) => d.data());
 
-  await deleteDoc(roomRef);
-  return true;
+  const map = {};
+  rows.forEach((r) => {
+    const key = r.teamId || "_NO_TEAM_";
+    map[key] = (map[key] || 0) + (r.points || 0);
+  });
+  return Object.entries(map)
+    .map(([teamId, total]) => ({ teamId, total }))
+    .sort((a, b) => b.total - a.total);
 };

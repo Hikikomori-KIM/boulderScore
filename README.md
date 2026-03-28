@@ -1,8 +1,14 @@
 # boulderScore
 ## 🧷 Bouldering Party Score Manager
 
-> 클라이버 동호회를 위한 볼데링 파티 점수 관리 웹 애플리케이션  
+> 클라이밍 동호회를 위한 볼데링 파티 점수 관리 웹 애플리케이션  
 > React + Firebase 기반, 실시간 랭킹계산 및 관리자 기능 제공
+
+---
+
+### 🌐 배포 링크 
+> 🔗 **[https://climbparty.web.app](https://climbparty.web.app)**  
+
 
 ---
 
@@ -66,11 +72,6 @@
 
 ---
 
-### 🌐 배포 링크 
-> `https://climbparty.web.app/`  
-
-
----
 
 ### 📌 기타
 

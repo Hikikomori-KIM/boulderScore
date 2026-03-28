@@ -393,7 +393,7 @@ export default function RoomScorerPage() {
                 </ul>
               )}
             </div>
-          </div>
+          </div> 
         </div>
       </div>
     </div>

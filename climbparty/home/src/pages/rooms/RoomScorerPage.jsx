@@ -11,8 +11,8 @@ import {
   setTapeScoreConfig,
   setMyGrade,
   submitScore,
-} from "../../../firebaseFunctions";
-import { db } from "../../../firebase";
+} from "../../firebaseFunctions";
+import { db } from "../../firebase";
 import {
   collection,
   onSnapshot,
@@ -393,7 +393,7 @@ export default function RoomScorerPage() {
                 </ul>
               )}
             </div>
-          </div>
+          </div> 
         </div>
       </div>
     </div>

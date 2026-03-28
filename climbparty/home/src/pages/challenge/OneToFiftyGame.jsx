@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { getAuth } from "firebase/auth";
 import { saveOneToFiftyRecord } from "../../firebaseFunctions";
 import styles from "./OneToFiftyGame.module.css";
-import GridButton from "../../components/challenge/GridButton";
+import GridButton from "./GridButton";
 
 export default function OneToFiftyGame() {
   const [grid, setGrid] = useState([]);

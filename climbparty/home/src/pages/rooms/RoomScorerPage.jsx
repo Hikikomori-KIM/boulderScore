@@ -11,8 +11,8 @@ import {
   setTapeScoreConfig,
   setMyGrade,
   submitScore,
-} from "../../../firebaseFunctions";
-import { db } from "../../../firebase";
+} from "../../firebaseFunctions";
+import { db } from "../../firebase";
 import {
   collection,
   onSnapshot,

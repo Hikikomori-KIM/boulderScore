@@ -9,7 +9,7 @@ import { ToastContainer } from "react-toastify";
 import RoomDetail from "./components/projects/RoomDetail";
 
 // ✅ 새 페이지 import
-import RoomScorerPage from "./components/projects/pages/RoomScorerPage";
+import RoomScorerPage from "./pages/rooms/RoomScorerPage";
 import RoomTeamScoresPage from "./components/projects/pages/RoomTeamScoresPage";
 import RoomRankingsPage from "./components/projects/pages/RoomRankingsPage";
 
@@ -34,7 +34,7 @@ import OpenInBrowser from './components/template/OpenInBrowser';
 import BoardDetail from './components/board/boardDetail';
 import BoardEdit from './components/board/boardEdit';
 import "react-toastify/dist/ReactToastify.css";
-import OneToFiftyGame from './components/challenge/OneToFiftyGame';
+import OneToFiftyGame from './pages/challenge/OneToFiftyGame';
 import OneToFiftyRanking from './components/challenge/OneToFiftyRanking';
 import ChallengeHome from './components/challenge/ChallengeHome';
 import AppleTenRank from './components/challenge/apple-ten/AppleTenRank';
@@ -43,7 +43,7 @@ import AppleTenGamePC from './components/challenge/apple-ten/AppleTenGamePC';
 import AppleTenGameMobile from './components/challenge/apple-ten/AppleTenGameMobile';
 import AdminAnnouncementPage from './components/admin/announcement';
 import { PartyProvider } from "./components/contexts/PartyContext";
-import ProjectsList from './components/projects/ProjectsList';
+import ProjectsList from './pages/projects/ProjectsList';
 import ProjectDashboard from './components/pages/ProjectDashboard';
 
 export default function App() {
